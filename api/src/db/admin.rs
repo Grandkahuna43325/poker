@@ -1,6 +1,9 @@
 use crate::db::connect::establish_connection;
 use crate::models::Admin;
-use crate::services::root::AddUserRequest;
+use crate::models::Player;
+use crate::models::Soul;
+use crate::services::root::AddAdminRequest;
+use crate::services::root::AddPlayerRequest;
 use crate::services::root::Auth;
 use crate::services::root::ChangePasswordInfo;
 use crate::services::root::DeleteUserRequest;
@@ -51,7 +54,7 @@ pub fn verify_password(login_info: Auth) -> ServerResponse {
     ServerResponse::BadPassword
 }
 
-pub fn create_user(user_data: AddUserRequest) -> Result<bool, ServerResponse> {
+pub fn create_admin(user_data: AddAdminRequest) -> Result<bool, ServerResponse> {
     use crate::schema::admin::dsl::*;
     use rand::{rngs::ThreadRng, RngCore};
 
@@ -190,7 +193,7 @@ pub fn change_password(change_password_info: ChangePasswordInfo) -> Result<bool,
     Ok(true)
 }
 
-pub fn list_users(auth: Auth) -> Result<Vec<String>, ServerResponse> {
+pub fn list_admin(auth: Auth) -> Result<Vec<String>, ServerResponse> {
     use crate::schema::admin::dsl::*;
 
     let i = verify_password(auth);
@@ -225,7 +228,7 @@ pub fn list_users(auth: Auth) -> Result<Vec<String>, ServerResponse> {
     Ok(user_list)
 }
 
-pub fn delete_user(change_password_info: DeleteUserRequest) -> Result<bool, ServerResponse> {
+pub fn delete_admin(change_password_info: DeleteUserRequest) -> Result<bool, ServerResponse> {
     use crate::schema::admin::dsl::*;
 
     let connection = &mut establish_connection()?;
@@ -253,6 +256,77 @@ pub fn delete_user(change_password_info: DeleteUserRequest) -> Result<bool, Serv
 
     Ok(true)
 }
+
+pub fn create_player(user_data: AddPlayerRequest) -> Result<bool, ServerResponse> {
+
+    let i = verify_password(Auth {
+        username: user_data.username,
+        password: user_data.password,
+    });
+
+    match i {
+        ServerResponse::Ok => {
+            let connection = &mut establish_connection();
+
+            let connection = match connection {
+                Ok(ok) => ok,
+                Err(err) => return Err(ServerResponse::DieselError(err.to_string())),
+            };
+
+            let added_player;
+            {
+            use crate::schema::player::dsl::*;
+            added_player = diesel::insert_into(player)
+                .values((
+                    &name.eq(user_data.player_name.clone()),
+                    &score.eq(user_data.score),
+                ))
+                .returning(Player::as_returning())
+                .get_result(connection);
+        }
+
+            let result = match added_player {
+                Ok(ok) => ok,
+                Err(err) => {
+                    println!("{err}");
+                    return Err(ServerResponse::DieselError(err.to_string()));
+                }
+            };
+
+            println!("{:?}", result);
+            use crate::schema::soul::dsl::*;
+            let result = diesel::insert_into(soul)
+                .values((
+                    &name.eq(user_data.player_name),
+                    &owner.eq(result.id),
+                ))
+                .returning(Soul::as_returning())
+                .get_result(connection);
+
+            let result = match result {
+                Ok(ok) => ok,
+                Err(err) => {
+                    println!("{err}");
+                    return Err(ServerResponse::DieselError(err.to_string()));
+                }
+            };
+
+            println!("{:?}", result);
+
+
+
+            return Ok(true);
+        }
+        _ => {
+            return Err(i);
+        }
+    }
+}
+
+
+
+
+
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ServerResponse {

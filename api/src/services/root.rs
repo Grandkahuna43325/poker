@@ -10,7 +10,7 @@ pub async fn login(data: web::Json<Auth>) -> impl Responder {
 
     let i = verify_password(data);
 
-    return HttpResponse::Ok().json(true);
+    return HttpResponse::Ok().json(i);
 }
 
 #[post("/api/change_password")]
@@ -38,13 +38,13 @@ pub async fn change_password(data: web::Json<ChangePasswordInfo>) -> impl Respon
 }
 
 #[post("/api/add_user")]
-pub async fn add_user(data: web::Json<AddUserRequest>) -> impl Responder {
-    use crate::db::admin::create_user;
+pub async fn add_user(data: web::Json<AddAdminRequest>) -> impl Responder {
+    use crate::db::admin::create_admin;
 
     let data = data.0;
 
     println!("New connection with: {:?}", data);
-    let i = create_user(data);
+    let i = create_admin(data);
 
     match i {
         Ok(_) => HttpResponse::Ok().json(ServerResponse::Ok),
@@ -57,12 +57,12 @@ pub async fn add_user(data: web::Json<AddUserRequest>) -> impl Responder {
 
 #[post("/api/delete_user")]
 pub async fn delete_user(data: web::Json<DeleteUserRequest>) -> impl Responder {
-    use crate::db::admin::delete_user;
+    use crate::db::admin::delete_admin;
 
     let data = data.0;
 
     println!("New connection with: {:?}", data);
-    let i = delete_user(data);
+    let i = delete_admin(data);
 
     match i {
         Ok(_) => return HttpResponse::Ok().json(ServerResponse::Ok),
@@ -74,10 +74,19 @@ pub async fn delete_user(data: web::Json<DeleteUserRequest>) -> impl Responder {
 }
 
 #[post("/api/add_player")]
-pub async fn add_player() -> impl Responder {
-    use crate::db::admin::create_user;
+pub async fn add_player(data: web::Json<AddPlayerRequest>) -> impl Responder {
+    use crate::db::admin::create_player;
 
-    HttpResponse::Ok().json(ServerResponse::Ok)
+    println!("New connection with: {:?}", data);
+    let i = create_player(data.0);
+
+    match i {
+        Ok(_) => {return HttpResponse::Ok().json(ServerResponse::Ok);},
+        Err(err) => {
+            println!("err: {err}");
+            return HttpResponse::Ok().json(err);
+        }
+    };
 }
 
 
@@ -97,7 +106,7 @@ pub struct ChangePasswordInfo {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct AddUserRequest {
+pub struct AddAdminRequest {
     pub username: String,
     pub current_password: String,
     pub new_username: String,
@@ -109,4 +118,12 @@ pub struct DeleteUserRequest {
     pub username: String,
     pub password: String,
     pub username_to_delete: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AddPlayerRequest {
+    pub username: String,
+    pub password: String,
+    pub player_name: String,
+    pub score: i32,
 }
