@@ -59,8 +59,8 @@ pub fn create_admin(user_data: AddAdminRequest) -> Result<bool, ServerResponse> 
     use rand::{rngs::ThreadRng, RngCore};
 
     let i = verify_password(Auth {
-        username: user_data.username,
-        password: user_data.current_password,
+        username: user_data.auth.username,
+        password: user_data.auth.password,
     });
 
     match i {
@@ -260,8 +260,8 @@ pub fn delete_admin(change_password_info: DeleteUserRequest) -> Result<bool, Ser
 pub fn create_player(user_data: AddPlayerRequest) -> Result<bool, ServerResponse> {
 
     let i = verify_password(Auth {
-        username: user_data.username,
-        password: user_data.password,
+        username: user_data.auth.username,
+        password: user_data.auth.password,
     });
 
     match i {
@@ -279,7 +279,8 @@ pub fn create_player(user_data: AddPlayerRequest) -> Result<bool, ServerResponse
             added_player = diesel::insert_into(player)
                 .values((
                     &name.eq(user_data.player_name.clone()),
-                    &score.eq(user_data.score),
+                    &score.eq(user_data.player_balance),
+                    &image_url.eq(user_data.player_img.clone()),
                 ))
                 .returning(Player::as_returning())
                 .get_result(connection);

@@ -16,3 +16,4 @@ yew = { version = "0.21.0", features = ["csr", "ssr"] }
 yew-router = "0.18.0"
 gloo-net = "0.2"
 yewdux = "0.10.0"
+gloo-console = "0.3.0"

@@ -37,7 +37,7 @@ pub async fn change_password(data: web::Json<ChangePasswordInfo>) -> impl Respon
     }
 }
 
-#[post("/api/add_user")]
+#[post("/api/add_admin")]
 pub async fn add_user(data: web::Json<AddAdminRequest>) -> impl Responder {
     use crate::db::admin::create_admin;
 
@@ -51,6 +51,24 @@ pub async fn add_user(data: web::Json<AddAdminRequest>) -> impl Responder {
         Err(err) => {
             println!("err: {err}");
             HttpResponse::Ok().json(err)
+        }
+    }
+}
+
+#[post("/api/list_admins")]
+pub async fn list_admins(data: web::Json<Auth>) -> impl Responder {
+    use crate::db::list_admins::list_admins as list_admins_api;
+
+    let auth = data.0;
+
+    println!("New connection with: {:?}", auth);
+    let i = list_admins_api(auth);
+
+    match i {
+        Ok(ok) => HttpResponse::Ok().json(ok),
+        Err(err) => {
+            println!("err: {err}");
+            HttpResponse::Ok().json(vec!["".to_string()])
         }
     }
 }
@@ -107,8 +125,7 @@ pub struct ChangePasswordInfo {
 
 #[derive(Debug, Deserialize)]
 pub struct AddAdminRequest {
-    pub username: String,
-    pub current_password: String,
+    pub auth: Auth,
     pub new_username: String,
     pub new_password: String,
 }
@@ -122,8 +139,8 @@ pub struct DeleteUserRequest {
 
 #[derive(Debug, Deserialize)]
 pub struct AddPlayerRequest {
-    pub username: String,
-    pub password: String,
+    pub auth: Auth,
     pub player_name: String,
-    pub score: i32,
+    pub player_balance: i32,
+    pub player_img: String,
 }

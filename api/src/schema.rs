@@ -16,6 +16,8 @@ diesel::table! {
         #[max_length = 25]
         name -> Varchar,
         score -> Int4,
+        #[max_length = 1000]
+        image_url -> Varchar,
     }
 }
 
@@ -28,4 +30,8 @@ diesel::table! {
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(admin, player, soul,);
+diesel::allow_tables_to_appear_in_same_query!(
+    admin,
+    player,
+    soul,
+);
