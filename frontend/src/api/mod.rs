@@ -6,3 +6,4 @@ pub mod change_password;
 pub mod add_player;
 pub mod list_players;
 pub mod game;
+pub mod change_player;

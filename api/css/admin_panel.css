@@ -1,0 +1,99 @@
+.admin-panel {
+  width: 80%;
+  max-width: 600px;
+  margin: 50px auto;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+}
+
+.option {
+  display: inline-block;
+  margin: 10px;
+  padding: 15px 30px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.option:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.preview {
+  width: 100vw;
+  display: inline-block;
+  display: flex;
+  margin-top: 8vh;
+  justify-content: center;
+}
+
+.image_preview > img {
+  width: 100%;
+  height: 22vh;
+  object-fit: cover;
+  object-position: 100% 100%;
+}
+
+.date > a {
+  color: white;
+  text-decoration: none;
+  vertical-align: bottom;
+}
+
+
+.card-description {
+  padding-left: 1vw;
+  padding-right: 1vw;
+  bottom: 0;
+  top: 0;
+}
+
+
+.single-card {
+  background-color: #26567D;
+  color: white;
+  width: 280px;
+  padding-bottom: 10px;
+  position: relative;
+}
+
+.card-description > h1 {
+  color: white;
+  margin: 1vh 0;
+  font-size: 1.5em;
+}
+
+.date {
+  position: absolute;
+  display: inline-block;
+  bottom: 0;
+  right: 0;
+}
+
+.add-post {
+  background-color: #4caf50;
+  border: none;
+}
+
+.remove-post {
+  background-color: #ff6347;
+  border: none;
+}
+
+.change-post {
+  background-color: #3498db;
+  border: none;
+}
+
+#upload-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+}

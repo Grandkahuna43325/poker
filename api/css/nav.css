@@ -1,0 +1,51 @@
+body {
+  background-color: #133C55;
+  font-family: 'Arial', sans-serif;
+  color: white;
+  margin-top: 8vh;
+}
+
+
+h1 {
+  font-size: 1.5em;
+  text-decoration: none;
+  color: white;
+}
+a {
+  text-decoration: none;
+}
+
+
+nav { 
+  position: fixed;
+  width: 110%;
+  left: 0;
+  top: 0;
+  display: flex;
+  background-color: #386FA4;
+  height: 7vh;
+  justify-content: center;
+  align-items: center;
+  transition: 0.8s;
+  z-index: 10;
+}
+
+.nav-element {
+  color: black;
+  margin-right: 10vw;
+  transition: 0.4s;
+}
+
+.nav-element > a {
+  color: white;
+  text-decoration: none;
+}
+
+.nav-element:hover { 
+  font-size: 110%;
+  margin-top: -0.5vh;
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+}

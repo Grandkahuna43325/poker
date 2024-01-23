@@ -1,8 +1,10 @@
-use crate::{api::add_player::add_player, router::AdminRoute};
+use crate::{api::{add_player::add_player, list_players::list_players, response::ServerResponse}, router::AdminRoute};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement;
-use yew::prelude::*;
+use yew::{prelude::*, virtual_dom::VNode};
 use yew_router::prelude::*;
+
+use super::game::game::Player;
 
 macro_rules! log {
     ($($t:tt)*) => {
@@ -82,19 +84,19 @@ impl Component for MainPanel {
                 }
             },
             Msg::ChangeUser => html! {
-                    <h1>{"zmiana posta"}</h1>
+                <ChangeUser username={self.username.clone()} password={self.password.clone()}/>
             },
             Msg::RemoveUser => html! {
-                <h1>{"usuwanie posta"}</h1>
+                <h1>{"usuwanie gracza"}</h1>
             },
             Msg::ChooseAction => html! {
                 <div class="admin-panel">
-                    <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
+                    <link rel="stylesheet" type="text/css" href="https://d9fd-188-146-95-12.ngrok-free.app/css/admin_panel.css"/>
                     <h2 style="color: black;">{"wybierz opcję"}</h2>
 
-                    <button class="option add-post" onclick={add_post} >{"dodaj post"}</button>
-                    <button class="option remove-post" onclick={remove_post}>{"usuń post"}</button>
-                    <button class="option change-post" onclick={change_post}>{"zmień post"}</button>
+                    <button class="option add-post" onclick={add_post} >{"dodaj gracza"}</button>
+                    <button class="option remove-post" onclick={remove_post}>{"usuń gracza"}</button>
+                    <button class="option change-post" onclick={change_post}>{"zmien gracza"}</button>
                 </div>
             },
         }
@@ -240,3 +242,215 @@ impl Component for AddUser {
         }
     }
 }
+
+pub enum ChangeUserMsg {
+    NewName(String),
+    NewImgUrl(String),
+    NewScore(i32),
+    Success(Vec<ServerResponse>),
+    Error(String),
+    Change,
+    PlayerList(Vec<Player>),
+    NewId(i32),
+}
+
+
+pub struct ChangeUser {
+    username: String,
+    password: String,
+    user_list: Vec<Player>,
+    player_img_url: Option<String>,
+    player_name: Option<String>,
+    player_score: Option<i32>,
+    player_id: Option<i32>,
+    success: bool,
+    error: String,
+}
+
+impl Component for ChangeUser {
+    type Message = ChangeUserMsg;
+    type Properties = Props;
+
+    fn create(ctx: &Context<Self>) -> Self {
+        ctx.link().send_future(async move {
+            let result = list_players().await;
+            log!("{:?}", result);
+            match result {
+                Ok(res) => match res {
+                    Ok(res) => ChangeUserMsg::PlayerList(res),
+                    Err(err) => ChangeUserMsg::Error(err.to_string()),
+                },
+                Err(err) => ChangeUserMsg::Error(err.to_string()),
+                }
+            }
+        );
+        let username = ctx.props().username.clone();
+        let password = ctx.props().password.clone();
+        Self {
+            username,
+            password,
+            user_list: Vec::new(),
+            player_img_url: None,
+            player_name: None,
+            player_id: None,
+            player_score: None,
+            success: false,
+            error: String::new(),
+        }
+    }
+
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            ChangeUserMsg::NewName(player_name) => {
+                self.player_name = Some(player_name);
+                true
+            }
+            ChangeUserMsg::NewImgUrl(player_img_url) => {
+                self.player_img_url = Some(player_img_url);
+                true
+            }
+            ChangeUserMsg::NewScore(player_score) => {
+                self.player_score = Some(player_score);
+                true
+            }
+            ChangeUserMsg::Success(res) => {
+                if res.len() > 1 {
+                    self.success = false;
+                } else {
+                    log!("{:?}", res);
+                    self.success = true;
+                }
+                true
+            }
+            ChangeUserMsg::Error(err) => {
+                self.error = err;
+                true
+            }
+            ChangeUserMsg::Change => {
+                use crate::api::change_player::change_player;
+                let username = self.username.clone();
+                let password = self.password.clone();
+                let player_img_url = self.player_img_url.clone();
+                let mut player_name = self.player_name.clone();
+                if player_name.is_some() {
+                    if player_name.clone().unwrap().len() < 2 {
+                        player_name = None;
+                    }
+                }
+                let player_id = self.player_id.unwrap().clone();
+                let player_score = self.player_score.clone();
+                ctx.link().send_future(async move {
+                    let result = change_player(
+                        username,
+                        password,
+                        player_img_url,
+                        player_name,
+                        player_score,
+                        player_id,
+                    ).await;
+                    log!("{:?}", result);
+                    match result {
+                        Ok(res) => ChangeUserMsg::Success(res),
+                        Err(err) => ChangeUserMsg::Error(err.to_string()),
+                    }
+                });
+                false
+            }
+            ChangeUserMsg::PlayerList(players) => {
+                self.user_list = players;
+                true
+            }
+            ChangeUserMsg::NewId(id) => {
+                self.player_id = Some(id);
+                true
+            }
+        }
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        if self.success {
+            return html! {
+                <h1>{"Udało się!"}</h1>
+            };
+        }
+        if self.error.len() > 0 {
+            return html! {
+                <h1>{self.error.clone()}</h1>
+            };
+        }
+
+        let change_user = ctx.link().callback(|_| ChangeUserMsg::Change);
+
+        let new_name = ctx.link().callback(|e: InputEvent| {
+            let target = e.target().unwrap();
+            let value = target.unchecked_into::<HtmlInputElement>().value();
+            ChangeUserMsg::NewName(value)
+        });
+
+        let new_img = ctx.link().callback(|e: InputEvent| {
+            let target = e.target().unwrap();
+            let value = target.unchecked_into::<HtmlInputElement>().value();
+            ChangeUserMsg::NewImgUrl(value)
+        });
+
+        let new_score = ctx.link().callback(|e: InputEvent| {
+            let target = e.target().unwrap();
+            let value = target
+                .unchecked_into::<HtmlInputElement>()
+                .value()
+                .parse()
+                .unwrap();
+            ChangeUserMsg::NewScore(value)
+        });
+
+        if self.player_id.is_none() {
+            let choose_id = ctx
+                .link()
+                .callback(|e: MouseEvent| {
+                    let target = e.target().unwrap();
+                    let value = target.unchecked_into::<HtmlInputElement>().value().parse().unwrap();
+                    log!("changing player with id: {:?}", value);
+
+                    ChangeUserMsg::NewId(value)
+                });
+            return html! {
+                <div class="change-user">
+                    <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
+                    <h2>{"wybór gracza"}</h2>
+                {
+                    self.user_list.iter().map(|player| {
+                        let (id, name) = (player.id, player.name.clone());
+                        
+                        html! {
+                            <option onclick={choose_id.clone()} value={id.to_string()}>{name}</option>
+                        }
+                    }).collect::<Vec<VNode>>()
+                }
+                    </div>
+            }
+        }
+
+        html! {
+            <div class="change-user">
+                <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
+                <h2>{"zmien użytkownika"}</h2>
+                <input
+                    type="text"
+                    placeholder="nazwa gracza"
+                    oninput={new_name}
+                />
+                <input
+                    type="text"
+                    placeholder="url obrazka"
+                    oninput={new_img}
+                />
+                <input
+                    type="number"
+                    oninput={new_score}
+                />
+                <button class="change-user-button" onclick={change_user} disabled={self.player_img_url.is_none() || self.player_name.is_none()}>{"zmien"}</button>
+            </div>
+        }
+    }
+}
+

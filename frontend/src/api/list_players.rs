@@ -6,7 +6,8 @@ use super::response::ServerResponse;
 pub async fn list_players() -> Result<Result<Vec<Player>, ServerResponse>, reqwest::Error> {
     let client = reqwest::Client::new();
     let res = client
-        .get("http://127.0.0.1:8080/api/list_players")
+        // .get("http://127.0.0.1:8080/api/list_players")
+        .get("https://d9fd-188-146-95-12.ngrok-free.app/api/list_players")
         .send()
         .await?;
 

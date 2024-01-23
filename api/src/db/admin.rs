@@ -6,6 +6,7 @@ use crate::services::root::AddAdminRequest;
 use crate::services::root::AddPlayerRequest;
 use crate::services::root::Auth;
 use crate::services::root::ChangePasswordInfo;
+use crate::services::root::ChangePlayerRequest;
 use crate::services::root::DeleteUserRequest;
 use diesel::prelude::*;
 use serde::Serialize;
@@ -258,7 +259,6 @@ pub fn delete_admin(change_password_info: DeleteUserRequest) -> Result<bool, Ser
 }
 
 pub fn create_player(user_data: AddPlayerRequest) -> Result<bool, ServerResponse> {
-
     let i = verify_password(Auth {
         username: user_data.auth.username,
         password: user_data.auth.password,
@@ -275,16 +275,16 @@ pub fn create_player(user_data: AddPlayerRequest) -> Result<bool, ServerResponse
 
             let added_player;
             {
-            use crate::schema::player::dsl::*;
-            added_player = diesel::insert_into(player)
-                .values((
-                    &name.eq(user_data.player_name.clone()),
-                    &score.eq(user_data.player_balance),
-                    &image_url.eq(user_data.player_img.clone()),
-                ))
-                .returning(Player::as_returning())
-                .get_result(connection);
-        }
+                use crate::schema::player::dsl::*;
+                added_player = diesel::insert_into(player)
+                    .values((
+                        &name.eq(user_data.player_name.clone()),
+                        &score.eq(user_data.player_balance),
+                        &image_url.eq(user_data.player_img.clone()),
+                    ))
+                    .returning(Player::as_returning())
+                    .get_result(connection);
+            }
 
             let result = match added_player {
                 Ok(ok) => ok,
@@ -297,10 +297,7 @@ pub fn create_player(user_data: AddPlayerRequest) -> Result<bool, ServerResponse
             println!("{:?}", result);
             use crate::schema::soul::dsl::*;
             let result = diesel::insert_into(soul)
-                .values((
-                    &name.eq(user_data.player_name),
-                    &owner.eq(result.id),
-                ))
+                .values((&name.eq(user_data.player_name), &owner.eq(result.id)))
                 .returning(Soul::as_returning())
                 .get_result(connection);
 
@@ -314,8 +311,6 @@ pub fn create_player(user_data: AddPlayerRequest) -> Result<bool, ServerResponse
 
             println!("{:?}", result);
 
-
-
             return Ok(true);
         }
         _ => {
@@ -324,10 +319,94 @@ pub fn create_player(user_data: AddPlayerRequest) -> Result<bool, ServerResponse
     }
 }
 
+pub fn change_player(user_data: ChangePlayerRequest) -> Vec<ServerResponse> {
+    use crate::schema::player::dsl::*;
+    let i = verify_password(user_data.auth);
+
+    match i {
+        ServerResponse::Ok => {}
+        _ => {
+            return vec![i];
+        }
+    }
+    let mut response = vec![];
+
+    let connection = &mut establish_connection();
+
+    let connection = match connection {
+        Ok(ok) => ok,
+        Err(err) => {
+            return vec![ServerResponse::DieselError(err.to_string())];
+        }
+    };
 
 
+    //all fields are options so we have to change them if and only if they are some
+    match user_data.player_name {
+        Some(ref x) => {
+            let result = diesel::update(player.filter(id.eq(user_data.player_id)))
+                .set(name.eq(x))
+                .execute(connection);
+            match result {
+                Ok(ok) => {}
+                Err(err) => {
+                    println!("{err}");
+                    response.push(ServerResponse::DieselError(err.to_string()));
+                }
+            }
+            {
+            use crate::schema::soul::dsl::*;
+            let result = diesel::update(soul.filter(owner.eq(user_data.player_id)))
+                .set(name.eq(x))
+                .execute(connection);
 
+            match result {
+                Ok(_) => {},
+                Err(err) => {
+                    println!("{err}");
+                    response.push(ServerResponse::DieselError(err.to_string()));
+                }
+            };
+            }
+        }
+        None => {}
+    }
+    match user_data.player_img_url {
+        Some(ref x) => {
+            let result = diesel::update(player.filter(id.eq(user_data.player_id)))
+                .set(image_url.eq(x))
+                .execute(connection);
+            match result {
+                Ok(ok) => {}
+                Err(err) => {
+                    println!("{err}");
+                    response.push(ServerResponse::DieselError(err.to_string()));
+                }
+            }
+        }
+        None => {}
+    }
 
+    let user_data = match user_data.player_score {
+        Some(x) => {
+            let result = diesel::update(player.filter(id.eq(user_data.player_id)))
+                .set(score.eq(x))
+                .execute(connection);
+            match result {
+                Ok(ok) => {}
+                Err(err) => {
+                    println!("{err}");
+                    response.push(ServerResponse::DieselError(err.to_string()));
+                }
+            }
+        }
+        None => {}
+    };
+
+    println!("{:?}", response);
+
+    response
+}
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ServerResponse {

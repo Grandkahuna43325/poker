@@ -99,7 +99,9 @@ pub async fn add_player(data: web::Json<AddPlayerRequest>) -> impl Responder {
     let i = create_player(data.0);
 
     match i {
-        Ok(_) => {return HttpResponse::Ok().json(ServerResponse::Ok);},
+        Ok(_) => {
+            return HttpResponse::Ok().json(ServerResponse::Ok);
+        }
         Err(err) => {
             println!("err: {err}");
             return HttpResponse::Ok().json(err);
@@ -107,7 +109,24 @@ pub async fn add_player(data: web::Json<AddPlayerRequest>) -> impl Responder {
     };
 }
 
+#[post("/api/change_player")]
+pub async fn change_player(data: web::Json<ChangePlayerRequest>) -> impl Responder {
+    use crate::db::admin::change_player;
 
+    println!("New connection with: {:?}", data);
+    let i = change_player(data.0);
+
+    return HttpResponse::Ok().json(i);
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ChangePlayerRequest {
+    pub auth: Auth,
+    pub player_img_url: Option<String>,
+    pub player_name: Option<String>,
+    pub player_score: Option<i32>,
+    pub player_id: i32,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct Auth {

@@ -1,6 +1,3 @@
-// use crate::file_list::actions::Auth;
-// use crate::file_list::add_post::ServerResponse;
-// use crate::file_list::lister::check_credentials;
 use crate::api::auth::check_credentials;
 use crate::api::response::ServerResponse;
 use crate::api::auth::Auth;
@@ -142,6 +139,7 @@ impl Component for Login {
                     });
                     html! {
                     <div id="main">
+                    <link rel="stylesheet" type="text/css" href="https://d9fd-188-146-95-12.ngrok-free.app/css/login.css"/>
                       <div id="login-input-div">
                         <h2 style="color: black">{"Błędne hasło lub nazwa użytkownika"}</h2>
                         <input

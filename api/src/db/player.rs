@@ -21,4 +21,3 @@ pub fn list_points() -> Result<Vec<(String, i32)>, ServerResponse> {
 
     Ok(result)
 }
-

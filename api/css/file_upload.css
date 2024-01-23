@@ -1,0 +1,133 @@
+.preview-media > img,
+p {
+  text-align: center;
+}
+
+label {
+  cursor: pointer;
+}
+
+input#file-upload {
+  visibility: hidden;
+}
+
+#wrapper {
+  width: 70%;
+  margin: auto;
+}
+
+#title {
+  font-size: 2rem;
+  text-align: center;
+}
+
+#drop-container {
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #3d4141;
+  border: 1px dashed #fcfcfc;
+  border-radius: 1rem;
+}
+
+#drop-container i {
+  font-size: 4rem;
+}
+
+#preview-area {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.preview-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  margin: 1rem;
+  background: #313737;
+  border-radius: 1rem;
+}
+
+.preview-media {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.preview {
+  width: 100vw;
+  display: inline-block;
+  display: flex;
+  margin-top: 8vh;
+  justify-content: center;
+}
+
+.image_preview > img {
+  width: 100%;
+  height: 22vh;
+  object-fit: cover;
+  object-position: 100% 100%;
+}
+
+.date > a {
+  color: white;
+  text-decoration: none;
+  vertical-align: bottom;
+}
+
+
+.card-description {
+  padding-left: 1vw;
+  padding-right: 1vw;
+  bottom: 0;
+  top: 0;
+}
+
+
+.single-card {
+  background-color: #26567D;
+  color: white;
+  width: 280px;
+  padding-bottom: 10px;
+  position: relative;
+}
+
+.card-description > h1 {
+  color: white;
+  margin: 1vh 0;
+  font-size: 1.5em;
+}
+
+.date {
+  position: absolute;
+  display: inline-block;
+  bottom: 0;
+  right: 0;
+}
+
+.add-post {
+  background-color: #4caf50;
+  border: none;
+}
+
+.remove-post {
+  background-color: #ff6347;
+  border: none;
+}
+
+.change-post {
+  background-color: #3498db;
+  border: none;
+}
+
+img {
+  width: 100%;
+  height: 22vh;
+  object-fit: cover;
+  object-position: 100% 100%;
+}

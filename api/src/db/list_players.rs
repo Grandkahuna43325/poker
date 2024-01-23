@@ -1,5 +1,5 @@
-use crate::db::connect::establish_connection;
 use crate::db::admin::ServerResponse;
+use crate::db::connect::establish_connection;
 use crate::services::player::Player;
 use diesel::prelude::*;
 
@@ -10,8 +10,7 @@ pub fn list_players() -> Result<Vec<Player>, ServerResponse> {
 
     let connection = &mut establish_connection()?;
 
-    let result = player
-        .load::<Player>(connection);
+    let result = player.load::<Player>(connection);
 
     let result = match result {
         Ok(ok) => ok,
@@ -21,9 +20,10 @@ pub fn list_players() -> Result<Vec<Player>, ServerResponse> {
         }
     };
 
-    result.iter().for_each(|x| { let x = x.clone(); player_vec.push(x) });
-
-    println!("{:?}", result);
+    result.iter().for_each(|x| {
+        let x = x.clone();
+        player_vec.push(x)
+    });
 
     Ok(player_vec)
 }

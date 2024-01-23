@@ -1,3 +1,3 @@
-pub mod root;
-pub mod player;
 pub mod game;
+pub mod player;
+pub mod root;

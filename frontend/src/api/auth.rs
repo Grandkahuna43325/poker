@@ -12,7 +12,8 @@ pub async fn check_credentials(credentials: Auth) -> Result<ServerResponse, reqw
     log!("{}", format!("{:?}", credentials));
     let client = reqwest::Client::new();
     let res = client
-        .post("http://127.0.0.1:8080/api/login")
+        // .post("http://127.0.0.1:8080/api/login")
+        .post("https://d9fd-188-146-95-12.ngrok-free.app/api/login")
         .json(&credentials)
         .send()
         .await?;

@@ -30,6 +30,8 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(soul -> player (owner));
+
 diesel::allow_tables_to_appear_in_same_query!(
     admin,
     player,

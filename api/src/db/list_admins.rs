@@ -1,8 +1,8 @@
-use crate::schema::admin::username;
-use crate::db::connect::establish_connection;
-use crate::db::admin::ServerResponse;
-use crate::services::root::Auth;
 use crate::db::admin::verify_password;
+use crate::db::admin::ServerResponse;
+use crate::db::connect::establish_connection;
+use crate::schema::admin::username;
+use crate::services::root::Auth;
 use diesel::prelude::*;
 
 pub fn list_admins(auth: Auth) -> Result<Vec<String>, ServerResponse> {
@@ -12,7 +12,7 @@ pub fn list_admins(auth: Auth) -> Result<Vec<String>, ServerResponse> {
     match i {
         ServerResponse::Ok => {}
         _ => {
-        return Err(i);
+            return Err(i);
         }
     }
 
