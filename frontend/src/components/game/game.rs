@@ -1,3 +1,4 @@
+use yew::virtual_dom::VNode;
 use serde::Serialize;
 use yew::prelude::*;
 
@@ -22,6 +23,7 @@ pub enum Msg {
     PlayerList(Vec<Player>),
     ServerError(ServerResponse),
     DecodeError(String),
+    AddPlayerById(i32),
 }
 
 #[derive(Debug, Properties, PartialEq)]
@@ -124,6 +126,19 @@ impl Component for Game {
                 self.action = Action::ErrorDecode(err);
                 true
             }
+            Msg::AddPlayerById(id) => {
+                let player = self.all_players
+                    .iter()
+                    .find(|p| p.id == id)
+                    .unwrap();
+
+                self.players
+                    .push(player.clone());
+
+
+                self.action = Action::None;
+                true
+            }
         }
     }
 
@@ -131,7 +146,15 @@ impl Component for Game {
         match &self.action {
             Action::None => {}
             Action::AddPlayer => {
-                return html! {<h1>{"add player"}</h1>};
+                return html! {<h1>{
+                    self.all_players.iter().map(|p| {
+                        let (id, name) = (p.id, p.name.clone());
+
+                        html!
+                        {<p onclick={ctx.link().callback(move |_| Msg::AddPlayerById(id))}>{name}</p>}
+
+                    }).collect::<Vec<VNode>>()
+                }</h1>};
             }
             Action::DeletePlayer => {
                 return html! {<h1>{"delete player"}</h1>};
@@ -147,7 +170,7 @@ impl Component for Game {
                 log!("error: {:?}", err);
                 return html! {<h1>{"error"}</h1>};
             }
-            
+
         }
 
 
@@ -276,7 +299,7 @@ impl Component for Game {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Player {
     pub id: i32,
     pub name: String,
