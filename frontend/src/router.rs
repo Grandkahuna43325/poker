@@ -49,7 +49,7 @@ pub fn switch(routes: Route) -> Html {
     match routes {
         Route::ListPoints => html! {"dee"},
         Route::NotFound => html! { <h1>{ "404" }</h1> },
-        Route::Game => html! { <GameComponent /> },
+        Route::Game => html! { <GameComponent username="u" password="u"/> },
         Route::AdminRoot | Route::Admin => html! { <Switch<AdminRoute> render={switch_admin} /> },
     }
 }
