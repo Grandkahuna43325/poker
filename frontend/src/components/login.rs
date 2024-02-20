@@ -129,7 +129,7 @@ impl Component for Login {
                     ctx.props().password.emit(String::from(&self.password));
                     html!{}
                 }
-                ServerResponse::BadPassword => {
+                ServerResponse::BadPassword | ServerResponse::UserDoesNotExist => {
                     let onkeypress = ctx.link().callback(move |e: KeyboardEvent| {
                         if e.key() == "Enter" {
                             Msg::Fetch
@@ -139,7 +139,7 @@ impl Component for Login {
                     });
                     html! {
                     <div id="main">
-                    <link rel="stylesheet" type="text/css" href="https://d9fd-188-146-95-12.ngrok-free.app/css/login.css"/>
+                    <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/login.css"/>
                       <div id="login-input-div">
                         <h2 style="color: black">{"Błędne hasło lub nazwa użytkownika"}</h2>
                         <input

@@ -17,3 +17,5 @@ yew-router = "0.18.0"
 gloo-net = "0.2"
 yewdux = "0.10.0"
 gloo-console = "0.3.0"
+chrono = { version = "0.4.34", features = ["serde"] }
+regex = "1.10.3"

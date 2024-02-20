@@ -1,0 +1,7 @@
+-- Your SQL goes here
+CREATE TABLE logs (
+  id SERIAL PRIMARY KEY,
+  date TIMESTAMP NOT NULL,
+  log TEXT NOT NULL,
+  admin_id INTEGER NOT NULL REFERENCES ADMIN(id)
+);

@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use chrono::NaiveDateTime;
 
 #[derive(Debug, Queryable, Identifiable, Selectable, Insertable)]
 #[diesel(table_name = crate::schema::soul)]
@@ -22,4 +23,13 @@ pub struct Admin {
     pub id: i32,
     pub username: String,
     pub password: String,
+}
+
+#[derive(Debug, Queryable, Identifiable, Selectable, Insertable)]
+#[diesel(table_name = crate::schema::logs)]
+pub struct Logs {
+    pub id: i32,
+    pub date: NaiveDateTime,
+    pub log: String,
+    pub admin_id: i32,
 }

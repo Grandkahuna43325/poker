@@ -11,6 +11,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    logs (id) {
+        id -> Int4,
+        date -> Timestamp,
+        log -> Text,
+        admin_id -> Int4,
+    }
+}
+
+diesel::table! {
     player (id) {
         id -> Int4,
         #[max_length = 25]
@@ -30,10 +39,12 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(logs -> admin (admin_id));
 diesel::joinable!(soul -> player (owner));
 
 diesel::allow_tables_to_appear_in_same_query!(
     admin,
+    logs,
     player,
     soul,
 );

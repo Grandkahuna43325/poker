@@ -91,7 +91,7 @@ impl Component for MainPanel {
             },
             Msg::ChooseAction => html! {
                 <div class="admin-panel">
-                    <link rel="stylesheet" type="text/css" href="https://d9fd-188-146-95-12.ngrok-free.app/css/admin_panel.css"/>
+                    <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
                     <h2 style="color: black;">{"wybierz opcję"}</h2>
 
                     <button class="option add-post" onclick={add_post} >{"dodaj gracza"}</button>
@@ -110,6 +110,7 @@ pub enum AdduserMsg {
     NewScore(i32),
     Success,
     Error(String),
+    AddNext,
 }
 
 pub struct AddUser {
@@ -179,13 +180,24 @@ impl Component for AddUser {
                 self.error = err;
                 true
             }
+            AdduserMsg::AddNext => {
+                self.player_name = String::new();
+                self.player_img_url = String::new();
+                self.player_score = 1100;
+                self.success = false;
+                self.error = String::new();
+                true
+            }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         if self.success {
             return html! {
+                <div>
                 <h1>{"Udało się!"}</h1>
+                <button class="option add-post" onclick={ctx.link().callback(|_| AdduserMsg::AddNext)} >{"dodaj nastepnego gracza"}</button>
+                </div>
             };
         }
         if self.error.len() > 0 {
@@ -220,6 +232,7 @@ impl Component for AddUser {
 
         html! {
             <div class="add-user">
+                // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
                 <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
                 <h2>{"dodaj użytkownika"}</h2>
                 <input
@@ -415,6 +428,7 @@ impl Component for ChangeUser {
                 });
             return html! {
                 <div class="change-user">
+                    // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
                     <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
                     <h2>{"wybór gracza"}</h2>
                 {
@@ -432,6 +446,7 @@ impl Component for ChangeUser {
 
         html! {
             <div class="change-user">
+                // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
                 <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
                 <h2>{"zmien użytkownika"}</h2>
                 <input
@@ -448,7 +463,7 @@ impl Component for ChangeUser {
                     type="number"
                     oninput={new_score}
                 />
-                <button class="change-user-button" onclick={change_user} disabled={self.player_img_url.is_none() || self.player_name.is_none()}>{"zmien"}</button>
+                <button class="change-user-button" onclick={change_user} >{"zmien"}</button>
             </div>
         }
     }

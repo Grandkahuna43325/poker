@@ -70,7 +70,7 @@ impl Component for AdminPanel {
         html! {
             <div>
                 // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/login.css"/>
-                <link rel="stylesheet" type="text/css" href="https://d9fd-188-146-95-12.ngrok-free.app/css/login.css"/>
+                <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/login.css"/>
                 if self.logged_in {
                     <Game username={self.username.clone()} password={self.password.clone()}/>
                 }else{

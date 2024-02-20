@@ -28,7 +28,7 @@ pub async fn change_balance(
     let client = reqwest::Client::new();
     let res = client
         // .post("http://127.0.0.1:8080/api/balance")
-        .post("https://d9fd-188-146-95-12.ngrok-free.app/api/balance")
+        .post("http://localhost:8080/api/balance")
         .json(&request)
         .send()
         .await?;

@@ -7,3 +7,4 @@ pub mod add_player;
 pub mod list_players;
 pub mod game;
 pub mod change_player;
+pub mod logs;

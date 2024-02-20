@@ -16,6 +16,7 @@ pub async fn list_points() -> impl Responder {
 
 #[get("/api/list_players")]
 pub async fn list_players() -> impl Responder {
+    println!("list_players called");
     let players = list_players_db();
     return HttpResponse::Ok().json(players);
 }

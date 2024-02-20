@@ -1,14 +1,16 @@
-use yew::html::IntoPropValue;
-use yew::virtual_dom::VNode;
 use serde::Serialize;
 use yew::prelude::*;
+use yew::virtual_dom::VNode;
+use yew_router::scope_ext::RouterScopeExt;
 
+use crate::router::AdminRoute;
 use crate::api::auth::Auth;
 use crate::api::game::change_balance;
-use crate::api::response::ServerResponse;
 use crate::api::list_players::list_players;
+use crate::api::logs::add_logs;
+use crate::api::response::ServerResponse;
 
-use serde::Deserialize ;
+use serde::Deserialize;
 
 macro_rules! log {
     ($($t:tt)*) => {
@@ -30,13 +32,13 @@ pub enum Msg {
     RemovePlayerById(i32),
     FoldById(i32),
     Winner(i32),
-    None
+    None,
 }
 
 #[derive(Debug, Properties, PartialEq)]
 pub struct Props {
     pub username: String,
-    pub password: String
+    pub password: String,
 }
 
 #[derive(Debug, PartialEq)]
@@ -44,7 +46,7 @@ enum GameStage {
     Flop,
     Turn,
     River,
-    SelectWinner
+    SelectWinner,
 }
 
 #[derive(Debug)]
@@ -54,7 +56,6 @@ pub enum Action {
     ErrorDecode(String),
     AddPlayer,
     DeletePlayer,
-    GetPlayerBalance
 }
 
 #[derive(Debug)]
@@ -66,8 +67,10 @@ pub struct Game {
     action: Action,
     folded: Vec<i32>,
     prize: i32,
+    logs: Vec<Logs>,
+    game_id: i32,
     username: String,
-    password: String
+    password: String,
 }
 
 impl Component for Game {
@@ -75,6 +78,9 @@ impl Component for Game {
     type Properties = Props;
 
     fn create(ctx: &Context<Self>) -> Self {
+        if ctx.props().username.is_empty() || ctx.props().password.is_empty() {
+            ctx.link().navigator().unwrap().push(&AdminRoute::RootPanel);
+        }
         ctx.link().send_future(async move {
             let result = list_players().await;
             log!("{:?}", result);
@@ -84,11 +90,16 @@ impl Component for Game {
                     Err(err) => Msg::ServerError(err),
                 },
                 Err(err) => Msg::DecodeError(err.to_string()),
-           }
+            }
         });
 
         let username = ctx.props().username.clone();
         let password = ctx.props().password.clone();
+
+        let first_log = Logs {
+            game_id: 1,
+            playerstats: Vec::new(),
+        };
 
         Self {
             username,
@@ -99,18 +110,21 @@ impl Component for Game {
             all_players: Vec::new(),
             action: Action::None,
             folded: vec![],
+            logs: vec![first_log],
             prize: 0,
+            game_id: 1,
         }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::None => {false},
+            Msg::None => false,
             Msg::Raise(amount) => {
                 log!("folded {}", self.folded.len());
                 self.pot_size += amount;
-                self.prize += amount * (self.players.len() as i32 - self.folded.len() as i32) ;
+                self.prize += amount * (self.players.len() - self.folded.len() ) as i32;
                 log!("prize {}", self.prize);
+                log!("prize - pot: {}", self.prize - self.pot_size);
                 true
             }
             Msg::AllIn => {
@@ -119,23 +133,64 @@ impl Component for Game {
             }
             Msg::Reset => {
                 self.pot_size = 1;
-                self.prize = 1 * (self.players.len() as i32 - self.folded.len() as i32);
+                self.prize = self.players.len() as i32;
+
+                log!("prize {}", self.prize);
+                //log current logs
+                // log!("log_len {} game_id {}", self.logs.len(), self.game_id);
+                // self.logs.iter().for_each(|x| {
+                //     log!("game_id {} \n", x.game_id);
+                //     log!("playerstats_len {} \n", x.playerstats.len());
+                //     for y in &x.playerstats {
+                //         log!("name: {} score: {} folded: {} \n", y.name, y.score, y.folded);
+                //     }
+                // });
+
                 true
             }
             Msg::Next => {
                 self.stage = match self.stage {
                     GameStage::Flop => GameStage::Turn,
                     GameStage::Turn => GameStage::River,
-                    GameStage::River => {
-                        GameStage::SelectWinner
-                    }
+                    GameStage::River => GameStage::SelectWinner,
                     GameStage::SelectWinner => {
                         // self.prize = 1;
                         // self.prize = 1 * (self.players.len() as i32 - self.folded.len() as i32);
                         log!("prize {}", self.prize);
                         self.folded = vec![];
                         self.action = Action::None;
-                        GameStage::Flop}
+                        self.game_id += 1;
+                        log!("adding empty logs");
+                        //send logs to the server
+                        let current_log = self.logs.last();
+                        let username = self.username.clone();
+                        let password = self.password.clone();
+                        match current_log.cloned() {
+                            None => {}
+                            Some(log) => {
+                                ctx.link().send_future(async move {
+                                    let result =
+                                        add_logs(log.clone(), Auth { username, password }).await;
+                                    log!("{:?}", result);
+                                    match result {
+                                        Ok(res) => {
+                                            match res {
+                                                ServerResponse::Ok => return Msg::None,
+                                                _ => {}
+                                            }
+                                            Msg::ServerError(res)
+                                        }
+                                        Err(err) => Msg::DecodeError(err.to_string()),
+                                    }
+                                });
+                            }
+                        }
+                        self.logs.push(Logs {
+                            game_id: self.game_id,
+                            playerstats: vec![],
+                        });
+                        GameStage::Flop
+                    }
                 };
                 true
             }
@@ -158,18 +213,14 @@ impl Component for Game {
                 true
             }
             Msg::AddPlayerById(id) => {
-                let player = self.all_players
-                    .iter()
-                    .find(|p| p.id == id)
-                    .unwrap();
+                let player = self.all_players.iter().find(|p| p.id == id).unwrap();
 
-                self.players
-                    .push(player.clone());
-
+                self.players.push(player.clone());
 
                 self.action = Action::None;
 
                 self.prize = (self.players.len() as i32 - self.folded.len() as i32) * self.pot_size;
+                log!("prize: {}", self.prize);
                 true
             }
             Msg::RemovePlayerById(id) => {
@@ -186,69 +237,117 @@ impl Component for Game {
                 let password = ctx.props().password.clone();
                 let amount = self.pot_size;
 
-
-                let folder = self.players.iter().find(|p| p.id == id).unwrap().name.clone();
-                log!("{} folded on {}",folder, self.pot_size);
+                let folder = self
+                    .players
+                    .iter()
+                    .find(|p| p.id == id)
+                    .unwrap()
+                    .name
+                    .clone();
+                log!("{} folded on {}", folder, self.pot_size);
+                log!("prize: {}", self.prize);
 
                 ctx.link().send_future(async move {
-                    let result = change_balance(
-                        Auth { username, password },
-                        id, -amount
-                        ).await;
+                    let result = change_balance(Auth { username, password }, id, -amount).await;
                     log!("{:?}", result);
                     Msg::None
                 });
 
+                let log = self.logs.iter_mut().find(|x| x.game_id == self.game_id);
+                match log {
+                    Some(x) => {
+                        log!("adding playerstats to logs");
+                        x.playerstats.push(PlayerGameStats {
+                            id,
+                            name: folder.clone(),
+                            score: -self.pot_size,
+                            folded: true,
+                        });
+                    }
+                    None => {
+                        log!("log with id {} not found", self.game_id);
+                    }
+                }
                 true
-            },
+            }
             Msg::Winner(id) => {
-                let winner = self.players.iter().find(|p| p.id == id).unwrap().name.clone();
+                let winner = self
+                    .players
+                    .iter()
+                    .find(|p| p.id == id)
+                    .unwrap()
+                    .name
+                    .clone();
 
                 let username = ctx.props().username.clone();
                 let password = ctx.props().password.clone();
                 let amount = self.prize - self.pot_size;
+                let pot_size = self.pot_size;
 
-
-                log!("{} won {}",winner, self.prize - self.pot_size);
+                log!("{} won {}", winner, self.prize);
+                log!("{} would win if removed pot size {}", winner, self.prize - self.pot_size);
+                log!("adding logs ");
+                self.logs
+                    .iter_mut()
+                    .filter(|x| x.game_id == self.game_id)
+                    .for_each(|x| {
+                        x.playerstats.push(PlayerGameStats {
+                            id,
+                            name: winner.clone(),
+                            score: amount,
+                            folded: false,
+                        });
+                    });
 
                 ctx.link().send_future(async move {
-                    let result = change_balance(
-                        Auth { username, password },
-                        id, amount.clone()
-                        ).await;
+                    let result =
+                        change_balance(Auth { username, password }, id, amount.clone()).await;
                     log!("{:?}", result);
                     Msg::None
                 });
 
-                let losers_id = self.players
+                let losers_id = self
+                    .players
                     .iter()
                     .filter(|p| p.id != id && !self.folded.contains(&p.id))
-                    .map(|p| p.id).collect::<Vec<i32>>();
-
-                let pot_size = self.pot_size;
+                    .map(|p| p.id)
+                    .collect::<Vec<i32>>();
 
                 for id in losers_id {
+                    let loser_name = self
+                        .players
+                        .iter()
+                        .find(|p| p.id == id)
+                        .unwrap()
+                        .name
+                        .clone();
+                    log!("adding logs");
+                    self.logs
+                        .iter_mut()
+                        .filter(|x| x.game_id == self.game_id)
+                        .for_each(|x| {
+                            x.playerstats.push(PlayerGameStats {
+                                id,
+                                name: loser_name.clone(),
+                                score: -pot_size,
+                                folded: false,
+                            });
+                        });
                     let username = ctx.props().username.clone();
                     let password = ctx.props().password.clone();
                     ctx.link().send_future(async move {
-                        let result = change_balance(
-                            Auth { username, password },
-                            id, -pot_size
-                            ).await;
+                        let result =
+                            change_balance(Auth { username, password }, id, -pot_size).await;
                         log!("{:?}", result);
                         Msg::None
                     });
                 }
 
-
-
-
                 self.pot_size = 1;
-                self.prize = 1 * (self.players.len() as i32 - self.folded.len() as i32);
-
+                self.prize = self.players.len() as i32;
 
                 ctx.link().send_message(Msg::Next);
-                
+
                 false
             }
         }
@@ -256,8 +355,12 @@ impl Component for Game {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         if self.stage == GameStage::SelectWinner {
-                //players that didn't fold
-            let remaining = self.players.iter().filter(|p| !self.folded.contains(&p.id)).collect::<Vec<_>>();
+            //players that didn't fold
+            let remaining = self
+                .players
+                .iter()
+                .filter(|p| !self.folded.contains(&p.id))
+                .collect::<Vec<_>>();
             return html! {<ol>{
                 remaining.iter().map(|p| {
                     let (id, name) = (p.id, p.name.clone());
@@ -270,10 +373,13 @@ impl Component for Game {
         match &self.action {
             Action::None => {}
             Action::AddPlayer => {
+                log!("add player");
                 return html! {<h1>{
                     self.all_players.iter().map(|p| {
                         let (id, name) = (p.id, p.name.clone());
-
+                        if self.players.iter().any(|x| x.id == id) {
+                            return html! {};
+                        }
                         html!
                         {<p onclick={ctx.link().callback(move |_| Msg::AddPlayerById(id))}>{name}</p>}
 
@@ -291,9 +397,6 @@ impl Component for Game {
                     }).collect::<Vec<VNode>>()
                 }</h1>};
             }
-            Action::GetPlayerBalance => {
-                return html! {<h1>{"get player balance"}</h1>};
-            }
             Action::Error(err) => {
                 log!("error: {:?}", err);
                 return html! {<h1>{"error"}</h1>};
@@ -302,10 +405,9 @@ impl Component for Game {
                 log!("error: {:?}", err);
                 return html! {<h1>{"error"}</h1>};
             }
-
         }
 
-        let max_players=27;
+        let max_players = 27;
         if self.players.len() > max_players {
             return html! {<h1>{"too many players"}</h1>};
         }
@@ -316,12 +418,11 @@ impl Component for Game {
             html! {
                 <div class="circle-box">
                     <p onclick={ctx.link().callback(move |_| Msg::FoldById(id))}>
-                      <img class="circle" src={url} style={if folded {"opacity: 0.5"} else {""}}/>
+                      <img class="circle" src={url} style={if folded {"opacity: 0.5"} else {""}} alt={name.clone()}/>
                     </p>
                 </div>
             }
         }).collect();
-
 
         playernode.resize_with(max_players, || {
             html! {
@@ -331,62 +432,15 @@ impl Component for Game {
             }
         });
 
-
-
         html! {
             <>
                 // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/game.css"/>
-                <link rel="stylesheet" type="text/css" href="https://d9fd-188-146-95-12.ngrok-free.app/css/game.css"/>
-                
+                <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/game.css"/>
+
                 <div id="circles-top">
                 {
                     playernode[0..=5].iter().cloned().collect::<Html>()
                 }
-                </div>
-                <div id="circles-left">
-                  {playernode[6..=13].iter().cloned().collect::<Html>()}
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player6"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player7"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player8"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player9"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player10"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player11"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player12"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player13"/>
-                  // </div>
-                </div>
-                <div id="circles-bottom">
-                {playernode[14..=18].iter().cloned().collect::<Html>()}
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player14"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player15"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player16"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player17"/>
-                  // </div>
-                  // <div class="circle-box">
-                  //   <img class="circle" id="player18"/>
-                  // </div>
                 </div>
                 <div id="circles-right">
                 {playernode[19..=26].iter().cloned().collect::<Html>()}
@@ -415,12 +469,67 @@ impl Component for Game {
                   //   <img class="circle" id="player26"/>
                   // </div>
                 </div>
+                <div id="circles-bottom">
+                {playernode[14..=18].iter().cloned().collect::<Html>()}
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player14"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player15"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player16"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player17"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player18"/>
+                  // </div>
+                </div>
+                <div id="circles-left">
+                  {playernode[6..=13].iter().cloned().collect::<Html>()}
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player6"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player7"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player8"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player9"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player10"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player11"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player12"/>
+                  // </div>
+                  // <div class="circle-box">
+                  //   <img class="circle" id="player13"/>
+                  // </div>
+                </div>
                 <div id="table">
                   <div id="table_top">
                     <div id="options">
                       <div id="buttons">
-                          <button id="delete" onclick={ctx.link().callback(|_| Msg::Action(Action::DeletePlayer))}>{ "delete player" }</button>
-                          <button id="add" onclick={ctx.link().callback(|_| Msg::Action(Action::AddPlayer))}>{ "add player" }</button>
+                          <button id="delete" onclick={ctx.link().callback(|_| Msg::Action(Action::DeletePlayer))} disabled={
+                              match &self.stage {
+                                  GameStage::Flop => {if self.pot_size > 2 {false} else {true}},
+                                  _ => true
+                              }
+                          }>{ "delete player" }</button>
+                          <button id="add" onclick={ctx.link().callback(|_| Msg::Action(Action::AddPlayer))} disabled={
+                              match &self.stage {
+                                  GameStage::Flop => {self.pot_size > 2},
+                                  _ => true
+                              }
+                          }>{ "add player" }</button>
                       </div>
                       </div>
                   </div>
@@ -436,7 +545,7 @@ impl Component for Game {
                       <div class="right">
                         <button class="raise" onclick={ctx.link().callback(|_| Msg::Raise(100))}>{"100"}</button>
                         <button class="raise" onclick={ctx.link().callback(|_| Msg::Raise(1000))}>{"1000"}</button>
-                        <button class="raise" onclick={ctx.link().callback(|_| Msg::AllIn)}>{"All in"}</button>
+                        <button class="raise" onclick={ctx.link().callback(|_| Msg::AllIn)} disabled={true}>{"All in"}</button>
                       </div>
                     </div>
                   </div>
@@ -457,4 +566,18 @@ pub struct Player {
     pub name: String,
     pub score: i32,
     pub image_url: String,
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct PlayerGameStats {
+    pub id: i32,
+    pub name: String,
+    pub folded: bool,
+    pub score: i32,
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct Logs {
+    pub game_id: i32,
+    pub playerstats: Vec<PlayerGameStats>,
 }

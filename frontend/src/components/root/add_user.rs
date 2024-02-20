@@ -154,6 +154,7 @@ impl Component for AddUser {
 
                 html! {
                 <div>
+                    // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/login.css"/>
                     <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/login.css"/>
                         <div>
                         <button onclick={ctx.link().callback(|_| {

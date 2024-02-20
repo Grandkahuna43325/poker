@@ -128,7 +128,7 @@ pub struct ChangePlayerRequest {
     pub player_id: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Auth {
     pub username: String,
     pub password: String,

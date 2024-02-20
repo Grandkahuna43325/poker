@@ -10,7 +10,10 @@ pub fn list_players() -> Result<Vec<Player>, ServerResponse> {
 
     let connection = &mut establish_connection()?;
 
-    let result = player.load::<Player>(connection);
+    //order players by score
+    let result = player
+        .order_by(score.desc())
+        .load::<Player>(connection);
 
     let result = match result {
         Ok(ok) => ok,
