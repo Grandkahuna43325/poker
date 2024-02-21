@@ -9,10 +9,15 @@ COPY . .
 RUN cd frontend && trunk build --release
 RUN cargo build --release
 
-FROM gcr.io/distroless/cc-debian10
+FROM debian as final
+
+RUN apt-get update && apt-get install -y pkg-config libssl-dev libpq-dev
+RUN apt-get install -y postgresql-client
+
 
 COPY --from=build /usr/src/app/target/release/ /usr/local/bin
-COPY --from=build /usr/src/app/frontend/dist/ /usr/local/bin/dist
+COPY --from=build /usr/src/app/api/css/ /usr/local/css
+COPY --from=build /usr/src/app/frontend/dist/ /usr/local/dist
 
-WORKDIR /usr/local/bin
-CMD ["api"]
+WORKDIR /usr/local
+CMD ["/usr/local/bin/api"]
