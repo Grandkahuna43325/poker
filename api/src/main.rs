@@ -7,7 +7,7 @@ extern crate argon2;
 
 use actix_cors::Cors; // Import the Cors middleware
 
-use actix_web::{http, App, HttpServer};
+use actix_web::{App, HttpServer};
 
 use actix_web_lab::web::spa;
 
