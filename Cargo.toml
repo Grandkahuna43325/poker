@@ -1,0 +1,8 @@
+[workspace]
+members = [
+	"api",
+	"common",
+	"frontend"
+]
+
+default-members = [ "api" ]
