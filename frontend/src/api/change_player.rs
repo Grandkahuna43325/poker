@@ -2,11 +2,6 @@ use crate::api::response::ServerResponse;
 use crate::api::auth::Auth;
 use serde::Serialize;
 
-macro_rules! log {
-    ($($t:tt)*) => {
-        web_sys::console::log_1(&format!($($t)*).into());
-    };
-}
 #[derive(Debug, Serialize)]
 pub struct ChangePlayerRequest {
     auth: Auth,

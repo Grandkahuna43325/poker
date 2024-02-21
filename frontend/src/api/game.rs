@@ -3,11 +3,6 @@ use serde::Serialize;
 
 use super::response::ServerResponse;
 
-macro_rules! log {
-    ($($t:tt)*) => {
-        web_sys::console::log_1(&format!($($t)*).into());
-    };
-}
 #[derive(Debug, Serialize)]
 pub struct ChangeBalance {
     pub auth: Auth,

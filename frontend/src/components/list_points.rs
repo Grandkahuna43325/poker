@@ -6,11 +6,6 @@ use crate::api::{list_players::list_players, logs::get_logs, response::ServerRes
 
 use super::game::game::Player;
 
-macro_rules! log {
-    ($($t:tt)*) => {
-        web_sys::console::log_1(&format!($($t)*).into());
-    };
-}
 
 #[derive(Debug)]
 pub enum Msg {
@@ -34,7 +29,6 @@ pub struct ListPoints {
     players: Vec<Player>,
     error: ServerResponse,
     error_decode: String,
-    current_player_id: i32,
     logs: Vec<(String, NaiveDateTime)>,
     action: Action,
 }
@@ -59,7 +53,6 @@ impl Component for ListPoints {
             players: Vec::new(),
             error: ServerResponse::Ok,
             error_decode: String::new(),
-            current_player_id: 0,
             logs: Vec::new(),
             action: Action::None,
         }
