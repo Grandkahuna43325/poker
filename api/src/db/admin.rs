@@ -348,7 +348,7 @@ pub fn change_player(user_data: ChangePlayerRequest) -> Vec<ServerResponse> {
                 .set(name.eq(x))
                 .execute(connection);
             match result {
-                Ok(ok) => {}
+                Ok(_) => {}
                 Err(err) => {
                     println!("{err}");
                     response.push(ServerResponse::DieselError(err.to_string()));
@@ -377,7 +377,7 @@ pub fn change_player(user_data: ChangePlayerRequest) -> Vec<ServerResponse> {
                 .set(image_url.eq(x))
                 .execute(connection);
             match result {
-                Ok(ok) => {}
+                Ok(_) => {}
                 Err(err) => {
                     println!("{err}");
                     response.push(ServerResponse::DieselError(err.to_string()));
@@ -387,13 +387,13 @@ pub fn change_player(user_data: ChangePlayerRequest) -> Vec<ServerResponse> {
         None => {}
     }
 
-    let user_data = match user_data.player_score {
+    match user_data.player_score {
         Some(x) => {
             let result = diesel::update(player.filter(id.eq(user_data.player_id)))
                 .set(score.eq(x))
                 .execute(connection);
             match result {
-                Ok(ok) => {}
+                Ok(_) => {}
                 Err(err) => {
                     println!("{err}");
                     response.push(ServerResponse::DieselError(err.to_string()));

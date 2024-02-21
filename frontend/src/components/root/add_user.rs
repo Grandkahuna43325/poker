@@ -179,7 +179,7 @@ impl Component for AddUser {
                             if !self.matching_password {
                                 <h1>{"hasła są różne"}</h1>
                             }
-                            <button disabled={!self.matching_password} {onclick} >{"zmień hasło"}</button>
+                            <button disabled={!self.matching_password} {onclick} >{"Dodaj użytkownika"}</button>
                             </div>
 
                 </div>

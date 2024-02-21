@@ -144,7 +144,6 @@ impl Component for AddUser {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             AdduserMsg::Add => {
-                log!("Add");
                 let username = self.username.clone();
                 let password = self.password.clone();
                 let name = self.player_name.clone();
@@ -152,7 +151,6 @@ impl Component for AddUser {
                 let score = self.player_score;
                 ctx.link().send_future(async move {
                     let result = add_player(username, password, name, score, image_url).await;
-                    log!("{:?}", result);
                     match result {
                         Ok(_) => AdduserMsg::Success,
                         Err(err) => AdduserMsg::Error(err.to_string()),
@@ -287,7 +285,6 @@ impl Component for ChangeUser {
     fn create(ctx: &Context<Self>) -> Self {
         ctx.link().send_future(async move {
             let result = list_players().await;
-            log!("{:?}", result);
             match result {
                 Ok(res) => match res {
                     Ok(res) => ChangeUserMsg::PlayerList(res),
@@ -361,7 +358,6 @@ impl Component for ChangeUser {
                         player_score,
                         player_id,
                     ).await;
-                    log!("{:?}", result);
                     match result {
                         Ok(res) => ChangeUserMsg::Success(res),
                         Err(err) => ChangeUserMsg::Error(err.to_string()),
@@ -422,7 +418,6 @@ impl Component for ChangeUser {
                 .callback(|e: MouseEvent| {
                     let target = e.target().unwrap();
                     let value = target.unchecked_into::<HtmlInputElement>().value().parse().unwrap();
-                    log!("changing player with id: {:?}", value);
 
                     ChangeUserMsg::NewId(value)
                 });

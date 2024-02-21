@@ -1,7 +1,6 @@
 use crate::db::admin::verify_password;
 use crate::db::admin::ServerResponse;
 use crate::db::connect::establish_connection;
-use crate::schema::admin::username;
 use crate::services::root::Auth;
 use diesel::prelude::*;
 

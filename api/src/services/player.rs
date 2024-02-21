@@ -1,11 +1,9 @@
 use crate::db::list_players::list_players as list_players_db;
 use crate::db::player::list_points as list_points_db;
-use actix_web::{get, web, HttpResponse, Responder};
+use actix_web::{get, HttpResponse, Responder};
 use diesel::deserialize::Queryable;
 use serde::Deserialize;
 use serde::Serialize;
-
-use super::root::Auth;
 
 #[get("/api/list_points")]
 pub async fn list_points() -> impl Responder {

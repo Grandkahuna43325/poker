@@ -4,12 +4,6 @@ use crate::components::root::add_user::AddUser;
 use crate::components::login::Login;
 use yew::prelude::*;
 
-macro_rules! log {
-    ($($t:tt)*) => {
-        web_sys::console::log_1(&format!($($t)*).into());
-    };
-}
-
 #[derive(Debug)]
 pub enum Msg {
     Password(String),

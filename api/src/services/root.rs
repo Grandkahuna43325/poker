@@ -6,9 +6,17 @@ use serde::Deserialize;
 #[post("/api/login")]
 pub async fn login(data: web::Json<Auth>) -> impl Responder {
     let data = data.0;
-    println!("New connection with: {:?}", data);
 
-    let i = verify_password(data);
+    let i = verify_password(data.clone());
+    
+    match i {
+        ServerResponse::Ok => {
+            println!("{} connected", data.username);
+        }
+        _ => {
+            println!("{} not connected with error: {}", data.username, i);
+        }
+    }
 
     return HttpResponse::Ok().json(i);
 }
@@ -19,19 +27,18 @@ pub async fn change_password(data: web::Json<ChangePasswordInfo>) -> impl Respon
 
     let data = data.0;
 
-    println!("New connection with: {:?}", data);
-    let i = change_password(data);
+    let i = change_password(data.clone());
 
     match i {
         Ok(ok) => {
             if ok {
-                println!("Connected!");
+                println!("Password changed by {}, for {}", data.username, data.username_to_change);
                 return HttpResponse::Ok().json(ServerResponse::Ok);
             };
             HttpResponse::Ok().json(ServerResponse::ChangePasswordError)
         }
         Err(err) => {
-            println!("err: {err}");
+            println!("Change password error: {err}");
             HttpResponse::Ok().json(err)
         }
     }
@@ -43,13 +50,14 @@ pub async fn add_user(data: web::Json<AddAdminRequest>) -> impl Responder {
 
     let data = data.0;
 
-    println!("New connection with: {:?}", data);
-    let i = create_admin(data);
+    let i = create_admin(data.clone());
 
     match i {
-        Ok(_) => HttpResponse::Ok().json(ServerResponse::Ok),
+        Ok(_) => { 
+            println!("{} added new admin", data.auth.username);
+            HttpResponse::Ok().json(ServerResponse::Ok) },
         Err(err) => {
-            println!("err: {err}");
+            println!("add admin error: {err}");
             HttpResponse::Ok().json(err)
         }
     }
@@ -61,13 +69,12 @@ pub async fn list_admins(data: web::Json<Auth>) -> impl Responder {
 
     let auth = data.0;
 
-    println!("New connection with: {:?}", auth);
     let i = list_admins_api(auth);
 
     match i {
         Ok(ok) => HttpResponse::Ok().json(ok),
         Err(err) => {
-            println!("err: {err}");
+            println!("err while listing admins: {err}");
             HttpResponse::Ok().json(vec!["".to_string()])
         }
     }
@@ -79,13 +86,14 @@ pub async fn delete_user(data: web::Json<DeleteUserRequest>) -> impl Responder {
 
     let data = data.0;
 
-    println!("New connection with: {:?}", data);
-    let i = delete_admin(data);
+    let i = delete_admin(data.clone());
 
     match i {
-        Ok(_) => return HttpResponse::Ok().json(ServerResponse::Ok),
+        Ok(_) => {
+            println!("{} deleted by {}", data.username_to_delete, data.username);
+            HttpResponse::Ok().json(ServerResponse::Ok) },
         Err(err) => {
-            println!("err: {err}");
+            println!("error while deleting user: {err}");
             HttpResponse::Ok().json(err)
         }
     }
@@ -95,15 +103,17 @@ pub async fn delete_user(data: web::Json<DeleteUserRequest>) -> impl Responder {
 pub async fn add_player(data: web::Json<AddPlayerRequest>) -> impl Responder {
     use crate::db::admin::create_player;
 
-    println!("New connection with: {:?}", data);
-    let i = create_player(data.0);
+    let data = data.0;
+
+    let i = create_player(data.clone());
 
     match i {
         Ok(_) => {
+            println!("{} added new player", data.auth.username);
             return HttpResponse::Ok().json(ServerResponse::Ok);
         }
         Err(err) => {
-            println!("err: {err}");
+            println!("error while adding player: {err}");
             return HttpResponse::Ok().json(err);
         }
     };
@@ -113,7 +123,6 @@ pub async fn add_player(data: web::Json<AddPlayerRequest>) -> impl Responder {
 pub async fn change_player(data: web::Json<ChangePlayerRequest>) -> impl Responder {
     use crate::db::admin::change_player;
 
-    println!("New connection with: {:?}", data);
     let i = change_player(data.0);
 
     return HttpResponse::Ok().json(i);
@@ -134,7 +143,7 @@ pub struct Auth {
     pub password: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct ChangePasswordInfo {
     pub username: String,
     pub current_password: String,
@@ -142,21 +151,21 @@ pub struct ChangePasswordInfo {
     pub new_password: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct AddAdminRequest {
     pub auth: Auth,
     pub new_username: String,
     pub new_password: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct DeleteUserRequest {
     pub username: String,
     pub password: String,
     pub username_to_delete: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct AddPlayerRequest {
     pub auth: Auth,
     pub player_name: String,

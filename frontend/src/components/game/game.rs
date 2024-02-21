@@ -83,7 +83,6 @@ impl Component for Game {
         }
         ctx.link().send_future(async move {
             let result = list_players().await;
-            log!("{:?}", result);
             match result {
                 Ok(res) => match res {
                     Ok(res) => Msg::PlayerList(res),
@@ -120,11 +119,10 @@ impl Component for Game {
         match msg {
             Msg::None => false,
             Msg::Raise(amount) => {
-                log!("folded {}", self.folded.len());
                 self.pot_size += amount;
                 self.prize += amount * (self.players.len() - self.folded.len() ) as i32;
-                log!("prize {}", self.prize);
-                log!("prize - pot: {}", self.prize - self.pot_size);
+                // log!("prize - pot: {}", self.prize - self.pot_size);
+                // log!("raised to  {}", self.pot_size);
                 true
             }
             Msg::AllIn => {
@@ -135,7 +133,7 @@ impl Component for Game {
                 self.pot_size = 1;
                 self.prize = self.players.len() as i32;
 
-                log!("prize {}", self.prize);
+                // log!("prize {}", self.prize);
                 //log current logs
                 // log!("log_len {} game_id {}", self.logs.len(), self.game_id);
                 // self.logs.iter().for_each(|x| {
@@ -156,11 +154,11 @@ impl Component for Game {
                     GameStage::SelectWinner => {
                         // self.prize = 1;
                         // self.prize = 1 * (self.players.len() as i32 - self.folded.len() as i32);
-                        log!("prize {}", self.prize);
+                        // log!("prize {}", self.prize);
                         self.folded = vec![];
                         self.action = Action::None;
                         self.game_id += 1;
-                        log!("adding empty logs");
+                        // log!("adding empty logs");
                         //send logs to the server
                         let current_log = self.logs.last();
                         let username = self.username.clone();
@@ -171,7 +169,7 @@ impl Component for Game {
                                 ctx.link().send_future(async move {
                                     let result =
                                         add_logs(log.clone(), Auth { username, password }).await;
-                                    log!("{:?}", result);
+                                    // log!("{:?}", result);
                                     match result {
                                         Ok(res) => {
                                             match res {
@@ -220,7 +218,7 @@ impl Component for Game {
                 self.action = Action::None;
 
                 self.prize = (self.players.len() as i32 - self.folded.len() as i32) * self.pot_size;
-                log!("prize: {}", self.prize);
+                // log!("prize: {}", self.prize);
                 true
             }
             Msg::RemovePlayerById(id) => {
@@ -244,19 +242,17 @@ impl Component for Game {
                     .unwrap()
                     .name
                     .clone();
-                log!("{} folded on {}", folder, self.pot_size);
-                log!("prize: {}", self.prize);
+                // log!("{} folded on {}", folder, self.pot_size);
+                // log!("prize: {}", self.prize);
 
                 ctx.link().send_future(async move {
-                    let result = change_balance(Auth { username, password }, id, -amount).await;
-                    log!("{:?}", result);
+                    let _ = change_balance(Auth { username, password }, id, -amount).await;
                     Msg::None
                 });
 
                 let log = self.logs.iter_mut().find(|x| x.game_id == self.game_id);
                 match log {
                     Some(x) => {
-                        log!("adding playerstats to logs");
                         x.playerstats.push(PlayerGameStats {
                             id,
                             name: folder.clone(),
@@ -284,9 +280,6 @@ impl Component for Game {
                 let amount = self.prize - self.pot_size;
                 let pot_size = self.pot_size;
 
-                log!("{} won {}", winner, self.prize);
-                log!("{} would win if removed pot size {}", winner, self.prize - self.pot_size);
-                log!("adding logs ");
                 self.logs
                     .iter_mut()
                     .filter(|x| x.game_id == self.game_id)
@@ -300,9 +293,8 @@ impl Component for Game {
                     });
 
                 ctx.link().send_future(async move {
-                    let result =
+                    let _ =
                         change_balance(Auth { username, password }, id, amount.clone()).await;
-                    log!("{:?}", result);
                     Msg::None
                 });
 
@@ -321,7 +313,7 @@ impl Component for Game {
                         .unwrap()
                         .name
                         .clone();
-                    log!("adding logs");
+
                     self.logs
                         .iter_mut()
                         .filter(|x| x.game_id == self.game_id)
@@ -336,9 +328,8 @@ impl Component for Game {
                     let username = ctx.props().username.clone();
                     let password = ctx.props().password.clone();
                     ctx.link().send_future(async move {
-                        let result =
+                        let _ =
                             change_balance(Auth { username, password }, id, -pot_size).await;
-                        log!("{:?}", result);
                         Msg::None
                     });
                 }
@@ -365,7 +356,7 @@ impl Component for Game {
                 remaining.iter().map(|p| {
                     let (id, name) = (p.id, p.name.clone());
                     html! {
-                        <li onclick={ctx.link().callback(move |_| Msg::Winner(id))}>{name}</li>
+                        <li style="padding-bottom: 3vh" onclick={ctx.link().callback(move |_| Msg::Winner(id))}>{name}</li>
                     }
                 }).collect::<Vec<VNode>>()
             }</ol>};
@@ -373,7 +364,6 @@ impl Component for Game {
         match &self.action {
             Action::None => {}
             Action::AddPlayer => {
-                log!("add player");
                 return html! {<h1>{
                     self.all_players.iter().map(|p| {
                         let (id, name) = (p.id, p.name.clone());
