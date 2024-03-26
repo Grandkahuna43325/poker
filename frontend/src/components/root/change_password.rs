@@ -158,8 +158,8 @@ impl Component for ChangePassword {
 
                 html! {
                 <div>
-                    // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/login.css"/>
-                    <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/login.css"/>
+                    // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
+                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
                         <div>
                         <button onclick={ctx.link().callback(|_| {
                             Msg::BackToMainPanel

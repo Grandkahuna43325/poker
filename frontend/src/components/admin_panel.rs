@@ -87,11 +87,11 @@ impl Component for MainPanel {
                 <ChangeUser username={self.username.clone()} password={self.password.clone()}/>
             },
             Msg::RemoveUser => html! {
-                <h1>{"usuwanie gracza"}</h1>
+                <h1>{"not implemented yet :)"}</h1>
             },
             Msg::ChooseAction => html! {
                 <div class="admin-panel">
-                    <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
+                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
                     <h2 style="color: black;">{"wybierz opcję"}</h2>
 
                     <button class="option add-post" onclick={add_post} >{"dodaj gracza"}</button>
@@ -230,8 +230,8 @@ impl Component for AddUser {
 
         html! {
             <div class="add-user">
-                // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
-                <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
+                // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
+                <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
                 <h2>{"dodaj użytkownika"}</h2>
                 <input
                     type="text"
@@ -423,8 +423,8 @@ impl Component for ChangeUser {
                 });
             return html! {
                 <div class="change-user">
-                    // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
-                    <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
+                    // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
+                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
                     <h2>{"wybór gracza"}</h2>
                 {
                     self.user_list.iter().map(|player| {
@@ -441,8 +441,8 @@ impl Component for ChangeUser {
 
         html! {
             <div class="change-user">
-                // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
-                <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
+                // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
+                <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
                 <h2>{"zmien użytkownika"}</h2>
                 <input
                     type="text"

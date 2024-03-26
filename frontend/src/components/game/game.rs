@@ -7,7 +7,6 @@ use crate::router::AdminRoute;
 use crate::api::auth::Auth;
 use crate::api::game::change_balance;
 use crate::api::list_players::list_players;
-use crate::api::logs::add_logs;
 use crate::api::response::ServerResponse;
 
 use serde::Deserialize;
@@ -67,10 +66,6 @@ pub struct Game {
     action: Action,
     folded: Vec<i32>,
     prize: i32,
-    logs: Vec<Logs>,
-    game_id: i32,
-    username: String,
-    password: String,
 }
 
 impl Component for Game {
@@ -92,26 +87,14 @@ impl Component for Game {
             }
         });
 
-        let username = ctx.props().username.clone();
-        let password = ctx.props().password.clone();
-
-        let first_log = Logs {
-            game_id: 1,
-            playerstats: Vec::new(),
-        };
-
         Self {
-            username,
-            password,
             pot_size: 1,
             players: Vec::new(),
             stage: GameStage::Flop,
             all_players: Vec::new(),
             action: Action::None,
             folded: vec![],
-            logs: vec![first_log],
             prize: 0,
-            game_id: 1,
         }
     }
 
@@ -157,36 +140,6 @@ impl Component for Game {
                         // log!("prize {}", self.prize);
                         self.folded = vec![];
                         self.action = Action::None;
-                        self.game_id += 1;
-                        // log!("adding empty logs");
-                        //send logs to the server
-                        let current_log = self.logs.last();
-                        let username = self.username.clone();
-                        let password = self.password.clone();
-                        match current_log.cloned() {
-                            None => {}
-                            Some(log) => {
-                                ctx.link().send_future(async move {
-                                    let result =
-                                        add_logs(log.clone(), Auth { username, password }).await;
-                                    // log!("{:?}", result);
-                                    match result {
-                                        Ok(res) => {
-                                            match res {
-                                                ServerResponse::Ok => return Msg::None,
-                                                _ => {}
-                                            }
-                                            Msg::ServerError(res)
-                                        }
-                                        Err(err) => Msg::DecodeError(err.to_string()),
-                                    }
-                                });
-                            }
-                        }
-                        self.logs.push(Logs {
-                            game_id: self.game_id,
-                            playerstats: vec![],
-                        });
                         GameStage::Flop
                     }
                 };
@@ -235,13 +188,6 @@ impl Component for Game {
                 let password = ctx.props().password.clone();
                 let amount = self.pot_size;
 
-                let folder = self
-                    .players
-                    .iter()
-                    .find(|p| p.id == id)
-                    .unwrap()
-                    .name
-                    .clone();
                 // log!("{} folded on {}", folder, self.pot_size);
                 // log!("prize: {}", self.prize);
 
@@ -250,20 +196,6 @@ impl Component for Game {
                     Msg::None
                 });
 
-                let log = self.logs.iter_mut().find(|x| x.game_id == self.game_id);
-                match log {
-                    Some(x) => {
-                        x.playerstats.push(PlayerGameStats {
-                            id,
-                            name: folder.clone(),
-                            score: -self.pot_size,
-                            folded: true,
-                        });
-                    }
-                    None => {
-                        log!("log with id {} not found", self.game_id);
-                    }
-                }
                 true
             }
             Msg::Winner(id) => {
@@ -280,17 +212,9 @@ impl Component for Game {
                 let amount = self.prize - self.pot_size;
                 let pot_size = self.pot_size;
 
-                self.logs
-                    .iter_mut()
-                    .filter(|x| x.game_id == self.game_id)
-                    .for_each(|x| {
-                        x.playerstats.push(PlayerGameStats {
-                            id,
-                            name: winner.clone(),
-                            score: amount,
-                            folded: false,
-                        });
-                    });
+                log!("{} won {}", winner, self.prize);
+                log!("{} would win if removed pot size {}", winner, self.prize - self.pot_size);
+                log!("adding logs ");
 
                 ctx.link().send_future(async move {
                     let _ =
@@ -306,25 +230,6 @@ impl Component for Game {
                     .collect::<Vec<i32>>();
 
                 for id in losers_id {
-                    let loser_name = self
-                        .players
-                        .iter()
-                        .find(|p| p.id == id)
-                        .unwrap()
-                        .name
-                        .clone();
-
-                    self.logs
-                        .iter_mut()
-                        .filter(|x| x.game_id == self.game_id)
-                        .for_each(|x| {
-                            x.playerstats.push(PlayerGameStats {
-                                id,
-                                name: loser_name.clone(),
-                                score: -pot_size,
-                                folded: false,
-                            });
-                        });
                     let username = ctx.props().username.clone();
                     let password = ctx.props().password.clone();
                     ctx.link().send_future(async move {
@@ -424,8 +329,8 @@ impl Component for Game {
 
         html! {
             <>
-                // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/game.css"/>
-                <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/game.css"/>
+                // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/game.css"/>
+                <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/game.css"/>
 
                 <div id="circles-top">
                 {
@@ -564,10 +469,4 @@ pub struct PlayerGameStats {
     pub name: String,
     pub folded: bool,
     pub score: i32,
-}
-
-#[derive(Debug, Serialize, Clone)]
-pub struct Logs {
-    pub game_id: i32,
-    pub playerstats: Vec<PlayerGameStats>,
 }

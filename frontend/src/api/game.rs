@@ -23,7 +23,7 @@ pub async fn change_balance(
     let client = reqwest::Client::new();
     let res = client
         // .post("http://127.0.0.1:8080/api/balance")
-        .post("http://localhost:8080/api/balance")
+        .post("https://poker.kfkorulczyk.pl/api/balance")
         .json(&request)
         .send()
         .await?;

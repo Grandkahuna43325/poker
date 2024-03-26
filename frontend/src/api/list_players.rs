@@ -6,7 +6,7 @@ pub async fn list_players() -> Result<Result<Vec<Player>, ServerResponse>, reqwe
     let client = reqwest::Client::new();
     let res = client
         // .get("http://127.0.0.1:8080/api/list_players")
-        .get("http://localhost:8080/api/list_players")
+        .get("https://poker.kfkorulczyk.pl/api/list_players")
         .send()
         .await?;
 
