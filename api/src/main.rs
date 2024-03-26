@@ -21,8 +21,6 @@ use crate::services::root::delete_user as delete_user_service;
 use crate::services::root::list_admins as list_admins_service;
 use crate::services::root::login as login_service;
 use crate::services::root::change_player as change_player_service;
-use crate::services::log::logs as logs_service;
-use crate::services::log::get_logs as get_logs_service;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -45,8 +43,6 @@ async fn main() -> std::io::Result<()> {
             .service(list_points_service)
             .service(change_balance_service)
             .service(change_player_service)
-            .service(logs_service)
-            .service(get_logs_service)
             .service(actix_files::Files::new("/css", "css").show_files_listing())
             .service(
                 spa()
@@ -56,7 +52,7 @@ async fn main() -> std::io::Result<()> {
                     .finish(),
             )
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 8080))?
     .run()
     .await
 }

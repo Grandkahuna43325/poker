@@ -6,6 +6,7 @@ use serde::Deserialize;
 #[post("/api/login")]
 pub async fn login(data: web::Json<Auth>) -> impl Responder {
     let data = data.0;
+    println!("New connection from: {:?}", data.username);
 
     let i = verify_password(data.clone());
     

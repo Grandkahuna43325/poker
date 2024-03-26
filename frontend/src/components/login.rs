@@ -139,7 +139,7 @@ impl Component for Login {
                     });
                     html! {
                     <div id="main">
-                    <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/login.css"/>
+                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
                       <div id="login-input-div">
                         <h2 style="color: black">{"Błędne hasło lub nazwa użytkownika"}</h2>
                         <input

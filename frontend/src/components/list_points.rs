@@ -1,8 +1,6 @@
-use regex::Regex;
-use chrono::NaiveDateTime;
 use yew::{prelude::*, virtual_dom::VNode};
 
-use crate::api::{list_players::list_players, logs::get_logs, response::ServerResponse};
+use crate::api::{list_players::list_players, response::ServerResponse};
 
 use super::game::game::Player;
 
@@ -10,18 +8,8 @@ use super::game::game::Player;
 #[derive(Debug)]
 pub enum Msg {
     ResOk(Vec<Player>),
-    ResOkLogs(Vec<(String, NaiveDateTime)>),
     ResErr(ServerResponse),
     ResDecodeError(String),
-    GetLogs(i32),
-    Action(Action),
-}
-
-#[derive(Debug)]
-pub enum Action {
-    None,
-    ViewLogs,
-    SelectPlayer(i32),
 }
 
 #[derive(Debug)]
@@ -29,8 +17,7 @@ pub struct ListPoints {
     players: Vec<Player>,
     error: ServerResponse,
     error_decode: String,
-    logs: Vec<(String, NaiveDateTime)>,
-    action: Action,
+    current_player_id: i32,
 }
 
 impl Component for ListPoints {
@@ -53,8 +40,7 @@ impl Component for ListPoints {
             players: Vec::new(),
             error: ServerResponse::Ok,
             error_decode: String::new(),
-            logs: Vec::new(),
-            action: Action::None,
+            current_player_id: 0,
         }
     }
 
@@ -72,72 +58,10 @@ impl Component for ListPoints {
                 self.error_decode = res;
                 true
             }
-            Msg::GetLogs(id) => {
-                ctx.link().send_future(async move {
-                    let result = get_logs(id).await;
-                    match result {
-                        Ok(res) => match res {
-                            Ok(res) => Msg::ResOkLogs(res),
-                            Err(err) => Msg::ResErr(err),
-                        },
-                        Err(err) => Msg::ResDecodeError(err.to_string()),
-                    }
-                });
-                true
-            }
-            Msg::ResOkLogs(res) => {
-                self.logs = res;
-
-                true
-            }
-            Msg::Action(action) => {
-                self.action = action;
-                true
-            }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        match self.action {
-            Action::None => {}
-            Action::ViewLogs => {
-                let logs = self.logs.clone();
-                let logs = logs.into_iter().map(|(log, time)| {
-                    let time = time.format("%Y-%m-%d %H:%M:%S").to_string();
-                    let re = Regex::new(r"name: (\w+) folded: (\w+) score: (-?\d+)").unwrap();
-
-                    let result = re.captures_iter(&log)
-                        .map(|cap| html!{
-                            <div>
-                            {format!("{} folded: {} score: {}", &cap[1], &cap[2], &cap[3])}
-                            <br/>
-                            </div>
-                        })
-                        .collect::<Vec<VNode>>();
-                    html! {
-                        <div>
-                            <div>{time}</div>
-                            <div>{result}</div>
-                            <br/>
-                        </div>
-                    }
-                }).collect::<VNode>();
-                return html! {
-                    <div>
-                        <button onclick={ctx.link().callback(|_| Msg::Action(Action::None))}>{"Back"}</button>
-                        <div>
-                            { logs }
-                        </div>
-                    </div>
-                };
-            }
-            Action::SelectPlayer(id) => {
-                ctx.link().send_message(Msg::Action(Action::ViewLogs));
-                ctx.link().send_message(Msg::ResOkLogs(Vec::new()));
-                ctx.link().send_message(Msg::GetLogs(id));
-            }
-        }
-
         if self.players.len() == 0 {
             return html! {<div>{"Pobieranie graczy..."}</div>};
         }
@@ -155,8 +79,7 @@ impl Component for ListPoints {
             let lost = p.score < 0;
             let id = p.id;
             html! {
-                <a
-                onclick={ctx.link().callback(move |_| Msg::Action(Action::SelectPlayer(id)))}>
+                <a>
                   <div id="item">
                       <div class="num">{i+1}</div>
                       <img src={p.image_url.clone()}
@@ -174,11 +97,11 @@ impl Component for ListPoints {
 
         html! {
           <div>
-              <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/leaderboard.css"/>
+              <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/leaderboard.css"/>
                 <div id="leaderboard">
                   <div>
                     <div id="top_3">
-                      <div class="top two" onclick={ctx.link().callback(move |_| Msg::Action(Action::SelectPlayer(p2_id)))}>
+                      <div class="top two">
                         <img
                           src={top_3.clone().nth(1).unwrap().image_url.clone()}
                           alt=""
@@ -187,7 +110,7 @@ impl Component for ListPoints {
                         <div>{top_3.clone().nth(1).unwrap().name.clone()}</div>
                         <div>{top_3.clone().nth(1).unwrap().score}</div>
                       </div>
-                      <div class="top one" onclick={ctx.link().callback(move |_| Msg::Action(Action::SelectPlayer(p1_id)))}>
+                      <div class="top one">
                         <img
                           src={top_3.clone().nth(0).unwrap().image_url.clone()}
                           alt={top_3.clone().nth(0).unwrap().name.clone()}
@@ -196,7 +119,7 @@ impl Component for ListPoints {
                         <div>{top_3.clone().nth(0).unwrap().name.clone()}</div>
                         <div>{top_3.clone().nth(0).unwrap().score}</div>
                       </div>
-                      <div class="top three" onclick={ctx.link().callback(move |_| Msg::Action(Action::SelectPlayer(p3_id)))}>
+                      <div class="top three">
                         <img
                           src={top_3.clone().nth(2).unwrap().image_url.clone()}
                           alt={top_3.clone().nth(2).unwrap().name.clone()}

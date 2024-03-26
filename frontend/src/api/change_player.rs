@@ -34,7 +34,7 @@ pub async fn change_player(
     let client = reqwest::Client::new();
     let res = client
         // .post("http://127.0.0.1:8080/api/change_password")
-        .post("http://localhost:8080/api/change_player")
+        .post("https://poker.kfkorulczyk.pl/api/change_player")
         .json(&request)
         .send()
         .await?;

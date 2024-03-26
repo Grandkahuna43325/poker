@@ -97,8 +97,8 @@ impl Component for RootPanel {
             match self.stage {
                 SelectedOption::Nothing => html! {
                     <div class="admin-panel">
-                        // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
-                        <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/admin_panel.css"/>
+                        // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
+                        <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
                         <h2 style="color: black;">{"wybierz opcję"}</h2>
 
                         <button class="option add-post" onclick={new_user} >{"Dodaj użytkownika"}</button>
@@ -120,8 +120,8 @@ impl Component for RootPanel {
         } else {
             html! {
                 <div>
-                    // <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/login.css"/>
-                    <link rel="stylesheet" type="text/css" href="http://localhost:8080/css/login.css"/>
+                    // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
+                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
                         <Login password={on_password} username={on_username} logged_in={on_login}/>
                 </div>
             }

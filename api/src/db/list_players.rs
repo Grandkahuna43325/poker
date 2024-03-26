@@ -8,6 +8,7 @@ pub fn list_players() -> Result<Vec<Player>, ServerResponse> {
 
     let mut player_vec = Vec::<Player>::new();
 
+    println!("Connecting to db");
     let connection = &mut establish_connection()?;
 
     //order players by score
