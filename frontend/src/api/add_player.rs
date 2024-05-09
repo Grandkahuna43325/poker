@@ -26,7 +26,7 @@ pub async fn add_player(
     };
     let client = reqwest::Client::new();
     let res = client
-        // .post("http://127.0.0.1:8080/api/add_player")
+        // .post("https://poker.kfkorulczyk.pl/api/add_player")
         .post("https://poker.kfkorulczyk.pl/api/add_player")
         .json(&request)
         .send()

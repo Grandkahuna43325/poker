@@ -22,7 +22,7 @@ pub async fn delete_user(
     };
     let client = reqwest::Client::new();
     let res = client
-        // .post("http://127.0.0.1:8080/api/delete_user")
+        // .post("https://poker.kfkorulczyk.pl/api/delete_user")
         .post("https://poker.kfkorulczyk.pl/api/delete_user")
         
         .json(&request)
@@ -37,7 +37,7 @@ pub async fn delete_user(
 pub async fn list_users(auth: Auth) -> Result<Vec<String>, reqwest::Error> {
     let client = reqwest::Client::new();
     let res = client
-        .post("http://127.0.0.1:8080/api/list_admins")
+        .post("https://poker.kfkorulczyk.pl/api/list_admins")
         .json(&auth)
         .send()
         .await?;

@@ -261,7 +261,7 @@ impl Component for Game {
                 remaining.iter().map(|p| {
                     let (id, name) = (p.id, p.name.clone());
                     html! {
-                        <li style="padding-bottom: 3vh" onclick={ctx.link().callback(move |_| Msg::Winner(id))}>{name}</li>
+                        <li style="padding-bottom: 4vh" onclick={ctx.link().callback(move |_| Msg::Winner(id))}>{name}</li>
                     }
                 }).collect::<Vec<VNode>>()
             }</ol>};
@@ -413,18 +413,21 @@ impl Component for Game {
                   <div id="table_top">
                     <div id="options">
                       <div id="buttons">
-                          <button id="delete" onclick={ctx.link().callback(|_| Msg::Action(Action::DeletePlayer))} disabled={
-                              match &self.stage {
-                                  GameStage::Flop => {if self.pot_size > 2 {false} else {true}},
-                                  _ => true
-                              }
+                          <button id="delete" 
+                              onclick={ctx.link().callback(|_| Msg::Action(Action::DeletePlayer))} 
+                              disabled={
+                                  match &self.stage {
+                                      GameStage::Flop => {self.pot_size > 1},
+                                      _ => true
+                                  }
                           }>{ "delete player" }</button>
-                          <button id="add" onclick={ctx.link().callback(|_| Msg::Action(Action::AddPlayer))} disabled={
-                              match &self.stage {
-                                  GameStage::Flop => {self.pot_size > 2},
-                                  _ => true
-                              }
-                          }>{ "add player" }</button>
+                          <button id="add" onclick={ctx.link().callback(|_| Msg::Action(Action::AddPlayer))} 
+                              disabled={
+                                  match &self.stage {
+                                      GameStage::Flop => {self.pot_size > 1},
+                                      _ => true
+                                  }
+                              }>{ "add player" }</button>
                       </div>
                       </div>
                   </div>

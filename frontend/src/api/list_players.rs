@@ -5,7 +5,7 @@ use super::response::ServerResponse;
 pub async fn list_players() -> Result<Result<Vec<Player>, ServerResponse>, reqwest::Error> {
     let client = reqwest::Client::new();
     let res = client
-        // .get("http://127.0.0.1:8080/api/list_players")
+        // .get("https://poker.kfkorulczyk.pl/api/list_players")
         .get("https://poker.kfkorulczyk.pl/api/list_players")
         .send()
         .await?;
