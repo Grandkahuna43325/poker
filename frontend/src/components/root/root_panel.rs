@@ -2,6 +2,7 @@ use crate::components::root::delete_user::DeleteUser;
 use crate::components::root::change_password::ChangePassword;
 use crate::components::root::add_user::AddUser;
 use crate::components::login::Login;
+use crate::state::State;
 use yew::prelude::*;
 
 #[derive(Debug)]
@@ -93,12 +94,14 @@ impl Component for RootPanel {
         let change_password = ctx.link().callback(|_| Msg::ChangePassword);
         let new_user = ctx.link().callback(|_| Msg::AddUser);
         let delete_user = ctx.link().callback(|_| Msg::DeleteUser);
+        let url = format!("{}/css/admin_panel.css", State::get_url());
+
         if self.logged_in {
             match self.stage {
                 SelectedOption::Nothing => html! {
                     <div class="admin-panel">
                         // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
-                        <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
+                        <link rel="stylesheet" type="text/css" href={url}/>
                         <h2 style="color: black;">{"wybierz opcję"}</h2>
 
                         <button class="option add-post" onclick={new_user} >{"Dodaj użytkownika"}</button>
@@ -118,10 +121,12 @@ impl Component for RootPanel {
 
             }
         } else {
+            let url = format!("{}/css/login.css", State::get_url());
+
             html! {
                 <div>
                     // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
-                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
+                    <link rel="stylesheet" type="text/css" href={url}/>
                         <Login password={on_password} username={on_username} logged_in={on_login}/>
                 </div>
             }

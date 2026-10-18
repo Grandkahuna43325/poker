@@ -1,6 +1,7 @@
 use serde::Serialize;
 use crate::api::response::ServerResponse;
 use crate::api::auth::Auth;
+use crate::state::State;
 
 #[derive(Debug, Serialize)]
 pub struct AddPlayerRequest {
@@ -27,7 +28,7 @@ pub async fn add_player(
     let client = reqwest::Client::new();
     let res = client
         // .post("https://poker.kfkorulczyk.pl/api/add_player")
-        .post("https://poker.kfkorulczyk.pl/api/add_player")
+        .post(format!("{}/api/add_player", State::get_url()))
         .json(&request)
         .send()
         .await?;

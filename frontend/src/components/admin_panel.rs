@@ -1,4 +1,4 @@
-use crate::{api::{add_player::add_player, list_players::list_players, response::ServerResponse}, router::AdminRoute};
+use crate::{api::{add_player::add_player, list_players::list_players, response::ServerResponse}, router::AdminRoute, state::State};
 use wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement;
 use yew::{prelude::*, virtual_dom::VNode};
@@ -76,6 +76,8 @@ impl Component for MainPanel {
         let add_post = ctx.link().callback(|_| Msg::AddUser);
         let remove_post = ctx.link().callback(|_| Msg::RemoveUser);
         let change_post = ctx.link().callback(|_| Msg::ChangeUser);
+        let url = format!("{}/css/login.css", State::get_url());
+
 
         match self.action {
             Msg::AddUser => html! {
@@ -91,7 +93,7 @@ impl Component for MainPanel {
             },
             Msg::ChooseAction => html! {
                 <div class="admin-panel">
-                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
+                    <link rel="stylesheet" type="text/css" href={url}/>
                     <h2 style="color: black;">{"wybierz opcję"}</h2>
 
                     <button class="option add-post" onclick={add_post} >{"dodaj gracza"}</button>
@@ -227,11 +229,12 @@ impl Component for AddUser {
                 .unwrap();
             AdduserMsg::NewScore(value)
         });
+        let url = format!("{}/css/admin_panel.css", State::get_url());
 
         html! {
             <div class="add-user">
                 // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
-                <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
+                <link rel="stylesheet" type="text/css" href={url}/>
                 <h2>{"dodaj użytkownika"}</h2>
                 <input
                     type="text"
@@ -421,10 +424,12 @@ impl Component for ChangeUser {
 
                     ChangeUserMsg::NewId(value)
                 });
+            let url = format!("{}/css/admin_panel.css", State::get_url());
+
             return html! {
                 <div class="change-user">
                     // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
-                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
+                    <link rel="stylesheet" type="text/css" href={url}/>
                     <h2>{"wybór gracza"}</h2>
                 {
                     self.user_list.iter().map(|player| {
@@ -439,10 +444,13 @@ impl Component for ChangeUser {
             }
         }
 
+        let url = format!("{}/css/admin_panel.css", State::get_url());
+
+
         html! {
             <div class="change-user">
                 // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
-                <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/admin_panel.css"/>
+                <link rel="stylesheet" type="text/css" href={url}/>
                 <h2>{"zmien użytkownika"}</h2>
                 <input
                     type="text"

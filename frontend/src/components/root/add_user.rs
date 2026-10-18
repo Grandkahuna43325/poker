@@ -1,6 +1,7 @@
 use crate::api::response::ServerResponse;
 use crate::api::add_user::add_user;
 use crate::router::AdminRoute;
+use crate::state::State;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
@@ -152,10 +153,11 @@ impl Component for AddUser {
 
                 let onclick = ctx.link().callback(|_| Msg::Change);
 
+                let url = format!("{}/css/login.css", State::get_url());
                 html! {
                 <div>
                     // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
-                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
+                    <link rel="stylesheet" type="text/css" href={url}/>
                         <div>
                         <button onclick={ctx.link().callback(|_| {
                             Msg::BackToMainPanel

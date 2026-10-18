@@ -1,5 +1,6 @@
 use crate::api::auth::Auth;
 use serde::Serialize;
+use crate::state::State;
 
 use super::response::ServerResponse;
 
@@ -23,7 +24,7 @@ pub async fn change_balance(
     let client = reqwest::Client::new();
     let res = client
         // .post("https://poker.kfkorulczyk.pl/api/balance")
-        .post("https://poker.kfkorulczyk.pl/api/balance")
+        .post(format!("{}/api/balance", State::get_url()))
         .json(&request)
         .send()
         .await?;

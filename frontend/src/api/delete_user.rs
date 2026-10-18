@@ -1,4 +1,5 @@
 use crate::api::auth::Auth;
+use crate::state::State;
 use serde::Serialize;
 
 use super::response::ServerResponse;
@@ -23,7 +24,7 @@ pub async fn delete_user(
     let client = reqwest::Client::new();
     let res = client
         // .post("https://poker.kfkorulczyk.pl/api/delete_user")
-        .post("https://poker.kfkorulczyk.pl/api/delete_user")
+        .post(format!("{}/api/delete_user", State::get_url()))
         
         .json(&request)
         .send()
@@ -37,7 +38,7 @@ pub async fn delete_user(
 pub async fn list_users(auth: Auth) -> Result<Vec<String>, reqwest::Error> {
     let client = reqwest::Client::new();
     let res = client
-        .post("https://poker.kfkorulczyk.pl/api/list_admins")
+        .post(format!("{}/api/list_admins", State::get_url()))
         .json(&auth)
         .send()
         .await?;

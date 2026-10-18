@@ -1,4 +1,5 @@
 use crate::api::auth::check_credentials;
+use crate::state::State;
 use crate::api::response::ServerResponse;
 use crate::api::auth::Auth;
 use gloo_console::log;
@@ -137,9 +138,10 @@ impl Component for Login {
                             Msg::Nothing
                         }
                     });
+                    let url = format!("{}/css/login.css", State::get_url());
                     html! {
                     <div id="main">
-                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
+                    <link rel="stylesheet" type="text/css" href={url}/>
                       <div id="login-input-div">
                         <h2 style="color: black">{"Błędne hasło lub nazwa użytkownika"}</h2>
                         <input

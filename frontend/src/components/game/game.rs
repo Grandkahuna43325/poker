@@ -3,6 +3,7 @@ use yew::prelude::*;
 use yew::virtual_dom::VNode;
 use yew_router::scope_ext::RouterScopeExt;
 
+use crate::state::State;
 use crate::router::AdminRoute;
 use crate::api::auth::Auth;
 use crate::api::game::change_balance;
@@ -327,10 +328,13 @@ impl Component for Game {
             }
         });
 
+        let url = format!("{}/css/game.css", State::get_url());
+
+
         html! {
             <>
                 // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/game.css"/>
-                <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/game.css"/>
+                <link rel="stylesheet" type="text/css" href={url}/>
 
                 <div id="circles-top">
                 {
@@ -466,10 +470,10 @@ pub struct Player {
     pub image_url: String,
 }
 
-#[derive(Debug, Serialize, Clone)]
-pub struct PlayerGameStats {
-    pub id: i32,
-    pub name: String,
-    pub folded: bool,
-    pub score: i32,
-}
+// #[derive(Debug, Serialize, Clone)]
+// pub struct PlayerGameStats {
+//     pub id: i32,
+//     pub name: String,
+//     pub folded: bool,
+//     pub score: i32,
+// }

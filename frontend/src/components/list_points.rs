@@ -1,6 +1,7 @@
 use yew::{prelude::*, virtual_dom::VNode};
 
 use crate::api::{list_players::list_players, response::ServerResponse};
+use crate::state::State;
 
 use super::game::game::Player;
 
@@ -17,7 +18,7 @@ pub struct ListPoints {
     players: Vec<Player>,
     error: ServerResponse,
     error_decode: String,
-    current_player_id: i32,
+    _current_player_id: i32,
 }
 
 impl Component for ListPoints {
@@ -40,11 +41,11 @@ impl Component for ListPoints {
             players: Vec::new(),
             error: ServerResponse::Ok,
             error_decode: String::new(),
-            current_player_id: 0,
+            _current_player_id: 0,
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::ResOk(res) => {
                 self.players = res;
@@ -61,7 +62,7 @@ impl Component for ListPoints {
         }
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
         if self.players.len() == 0 {
             return html! {<div>{"Pobieranie graczy..."}</div>};
         }
@@ -77,7 +78,7 @@ impl Component for ListPoints {
 
         let rest = self.players.iter().enumerate().skip(3).map(|(i, p)| {
             let lost = p.score < 0;
-            let id = p.id;
+            let _id = p.id;
             html! {
                 <a>
                   <div id="item">
@@ -91,13 +92,15 @@ impl Component for ListPoints {
             }
         }).collect::<Vec<VNode>>();
 
-        let p1_id = top_3.clone().nth(0).unwrap().id;
-        let p2_id = top_3.clone().nth(1).unwrap().id;
-        let p3_id = top_3.clone().nth(2).unwrap().id;
+        // let _p1_id = top_3.clone().nth(0).unwrap().id;
+        // let _p2_id = top_3.clone().nth(1).unwrap().id;
+        // let _p3_id = top_3.clone().nth(2).unwrap().id;
+        let url = format!("{}/css/leaderboard.css", State::get_url());
+
 
         html! {
           <div>
-              <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/leaderboard.css"/>
+              <link rel="stylesheet" type="text/css" href={url}/>
                 <div id="leaderboard">
                   <div>
                     <div id="top_3">

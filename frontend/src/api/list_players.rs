@@ -1,4 +1,5 @@
 use crate::components::game::game::Player;
+use crate::state::State;
 
 use super::response::ServerResponse;
 
@@ -6,7 +7,7 @@ pub async fn list_players() -> Result<Result<Vec<Player>, ServerResponse>, reqwe
     let client = reqwest::Client::new();
     let res = client
         // .get("https://poker.kfkorulczyk.pl/api/list_players")
-        .get("https://poker.kfkorulczyk.pl/api/list_players")
+        .get(format!("{}/api/list_players", State::get_url()))
         .send()
         .await?;
 

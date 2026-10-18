@@ -1,5 +1,6 @@
 use crate::api::response::ServerResponse;
 use crate::api::auth::Auth;
+use crate::state::State;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
@@ -27,7 +28,7 @@ pub async fn change_password(
     let client = reqwest::Client::new();
     let res = client
         // .post("https://poker.kfkorulczyk.pl/api/change_password")
-        .post("https://poker.kfkorulczyk.pl/api/change_password")
+        .post(format!("{}/api/change_password", State::get_url()))
         .json(&request)
         .send()
         .await?;

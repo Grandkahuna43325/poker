@@ -1,4 +1,5 @@
 use crate::components::root::root_panel::RootPanel;
+use crate::state::State;
 use crate::api::response::ServerResponse;
 use crate::api::change_password::change_password;
 use crate::router::AdminRoute;
@@ -156,10 +157,11 @@ impl Component for ChangePassword {
 
                 let onclick = ctx.link().callback(|_| Msg::Change);
 
+                let url = format!("{}/css/login.css", State::get_url());
                 html! {
                 <div>
                     // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
-                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
+                    <link rel="stylesheet" type="text/css" href={url}/>
                         <div>
                         <button onclick={ctx.link().callback(|_| {
                             Msg::BackToMainPanel

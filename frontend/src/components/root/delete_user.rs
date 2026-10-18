@@ -1,4 +1,5 @@
 use crate::api::auth::Auth;
+use crate::state::State;
 use crate::api::response::ServerResponse;
 use crate::api::delete_user::delete_user;
 use crate::api::delete_user::list_users;
@@ -147,11 +148,12 @@ impl Component for DeleteUser {
                 });
 
                 let onclick = ctx.link().callback(|_| Msg::Delete);
+                let url = format!("{}/css/login.css", State::get_url());
 
                 html! {
                 <div>
                     // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
-                    <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
+                    <link rel="stylesheet" type="text/css" href={url}/>
                         <button onclick={ctx.link().callback(|_| {
                             Msg::BackToMainPanel
                         })

@@ -1,5 +1,6 @@
 use crate::components::game::game::Game;
 use crate::components::login::Login;
+use crate::state::State;
 use yew::prelude::*;
 
 
@@ -60,11 +61,12 @@ impl Component for AdminPanel {
         let on_password = ctx
             .link()
             .callback(|password: String| Msg::Password(password));
+        let url = format!("{}/css/login.css", State::get_url());
 
         html! {
             <div>
                 // <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
-                <link rel="stylesheet" type="text/css" href="https://poker.kfkorulczyk.pl/css/login.css"/>
+                <link rel="stylesheet" type="text/css" href={url}/>
                 if self.logged_in {
                     <Game username={self.username.clone()} password={self.password.clone()}/>
                 }else{

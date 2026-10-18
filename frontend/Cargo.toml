@@ -15,7 +15,7 @@ web-sys = { version = "0.3.65", features = ["DragEvent", "DataTransfer", "Inters
 yew = { version = "0.21.0", features = ["csr", "ssr"] }
 yew-router = "0.18.0"
 gloo-net = "0.2"
-yewdux = "0.10.0"
+# yewdux = "0.10.0"
 gloo-console = "0.3.0"
 chrono = { version = "0.4.34", features = ["serde"] }
 regex = "1.10.3"
